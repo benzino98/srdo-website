@@ -83,8 +83,6 @@ const RecentProjects: React.FC = () => {
       setError(null);
 
       try {
-        console.log("Fetching recent projects from database...");
-
         // Use useApi hook for better error handling and consistency
         const response = await get("/projects", {
           params: {
@@ -93,8 +91,6 @@ const RecentProjects: React.FC = () => {
             order: "desc",
           },
         });
-
-        console.log("API response:", response);
 
         // Handle different response formats
         let projectData = [];
@@ -114,7 +110,6 @@ const RecentProjects: React.FC = () => {
         }
 
         if (projectData.length > 0) {
-          console.log("Successfully loaded projects:", projectData);
           setProjects(projectData);
         } else {
           console.warn("No projects found in response:", response);

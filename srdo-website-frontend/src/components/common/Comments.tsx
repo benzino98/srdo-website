@@ -44,12 +44,6 @@ interface CommentsProps {
 
 // Process API comments - keep reference separate from the component
 const processAPIComments = (apiComments: Comment[], savedStats: any[]) => {
-  console.log(
-    `Processing ${apiComments.length} comments with ${
-      savedStats?.length || 0
-    } saved stats`
-  );
-
   return apiComments.map((comment) => {
     // Look for saved stats for this comment
     const commentStats = savedStats.find((stat) => stat.id === comment.id);
@@ -80,14 +74,12 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
     try {
       const storageKey = `${type}_${itemId}_comments_stats`;
       const savedStatsString = localStorage.getItem(storageKey);
-      console.log(`On init - checking localStorage key: ${storageKey}`);
 
       if (savedStatsString) {
         const savedStats = JSON.parse(savedStatsString);
-        console.log(`Found saved comment stats:`, savedStats);
+
         return savedStats;
       } else {
-        console.log(`No saved comment stats found for ${storageKey}`);
         return [];
       }
     } catch (error) {
@@ -114,17 +106,14 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
   >(() => {
     try {
       const storageKey = `${type}_${itemId}_likes`;
-      console.log(`On init - checking localStorage for likes: ${storageKey}`);
+
       const savedLikes = localStorage.getItem(storageKey);
       if (savedLikes) {
-        console.log(`Found saved likes:`, JSON.parse(savedLikes));
         return JSON.parse(savedLikes);
       } else {
-        console.log(`No saved likes found for ${storageKey}`);
         return {};
       }
     } catch (error) {
-      console.error("Error loading saved likes:", error);
       return {};
     }
   });
@@ -140,13 +129,7 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
     try {
       const storageKey = `${type}_${itemId}_likes`;
       localStorage.setItem(storageKey, JSON.stringify(likedComments));
-      console.log(
-        `Saved likes to localStorage with key: ${storageKey}`,
-        likedComments
-      );
-    } catch (error) {
-      console.error("Error saving likes to localStorage:", error);
-    }
+    } catch (error) {}
   }, [likedComments, type, itemId]);
 
   // Generate a color based on name
@@ -193,19 +176,11 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         process.env.REACT_APP_API_URL || "http://localhost:8000/api"; // Use environment variable
       const directEndpoint = `${baseUrl}/${type}/${itemId}/comments`; // Remove duplicate v1
 
-      // Debug URL construction
-      console.log(`BaseURL: "${baseUrl}"`);
-      console.log(`Full endpoint with v1: "${directEndpoint}"`);
-
       // Get auth token - use srdo_token which is what the useApi hook uses
       const token = localStorage.getItem("srdo_token");
-      console.log(
-        `Using auth token: ${token ? "Yes (found)" : "No (not found)"}`
-      );
 
       // Full explicit URL construction to avoid any middleware or interceptors adding v1
       const fullUrl = `${directEndpoint}?nocache=${Date.now()}`;
-      console.log(`Making request to: "${fullUrl}"`);
 
       // Make direct axios call - avoid any interceptors that might add v1
       const axiosInstance = axios.create({
@@ -221,20 +196,15 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
       try {
         // Make request with explicit full URL
-        console.log("Sending axios request to:", fullUrl);
-        const response = await axiosInstance.get(fullUrl);
-        console.log("Full axios response:", response);
 
-        console.log(`Response status: ${response.status}`);
+        const response = await axiosInstance.get(fullUrl);
 
         // Check for error responses
         if (response.status === 401) {
-          console.log("⚠️ Unauthorized - but proceeding to show comment form");
           return;
         }
 
         if (response.status === 404) {
-          console.log("⚠️ Comments endpoint not found");
           setComments([]);
           setTotalComments(0);
           setError("Comments are not available for this content.");
@@ -243,8 +213,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
         // Continue with normal processing for successful responses
         if (response.status === 200) {
-          console.log("Raw response data:", response.data);
-
           // Extract comments from response
           let commentsData = [];
 
@@ -266,9 +234,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
             (comment: Comment) => comment.is_approved
           );
 
-          console.log("Processed comments data:", commentsData);
-          console.log(`Found ${commentsData.length} approved comments`);
-
           // Sort comments based on current sort preference
           const sortedComments = [...commentsData].sort(
             sortBy === "top" ? sortByTop : sortByNewest
@@ -278,12 +243,10 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
           setTotalComments(sortedComments.length);
           setError(null);
         } else {
-          console.error("Empty or error response:", response);
           setComments([]);
           setTotalComments(0);
         }
       } catch (axiosError: any) {
-        console.error("Error with direct API call:", axiosError);
         throw axiosError;
       }
     } catch (err: any) {
@@ -293,7 +256,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
       // Check if this is an auth error
       if (err.response?.status === 401) {
-        console.log("Unauthorized error, but proceeding to show comment form");
       } else {
         setError("Failed to load comments. Please try again later.");
       }
@@ -308,11 +270,7 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       setLoading(true);
       setError(null);
 
-      console.log(`Loading comments for ${type}/${itemId}`);
-      console.log(`ItemId type: ${typeof itemId}, value: ${itemId}`);
-
       if (!itemId || isNaN(Number(itemId))) {
-        console.error("Invalid itemId in loadComments:", itemId);
         setComments([]);
         setTotalComments(0);
         setError("Invalid content ID");
@@ -322,26 +280,19 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
       // Load saved stats each time to ensure we have the latest data
       const savedStats = loadInitialCommentStats();
-      console.log("Loaded saved stats for applying to comments:", savedStats);
 
       const apiEndpoint = `/${type}/${itemId}/comments`; // Remove duplicate v1
-      console.log(`Using hook to request: ${apiEndpoint}`);
 
       try {
         const timestampedEndpoint = `${apiEndpoint}?_t=${Date.now()}`;
-        console.log(`Making API request to: ${timestampedEndpoint}`);
 
         const result = await get(timestampedEndpoint);
-        console.log("Raw API response:", result);
 
         if (result) {
-          console.log("Received data from API hook:", result);
-
           let newComments: Comment[] = [];
 
           if (Array.isArray(result)) {
             newComments = result;
-            console.log("Found comments in result array");
           } else {
             const apiResponse = result as ApiResponse;
             // Check if apiResponse exists and has a data property
@@ -351,14 +302,11 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
                 Array.isArray(apiResponse.data.comments)
               ) {
                 newComments = apiResponse.data.comments;
-                console.log("Found comments in response.data.comments");
               } else if (Array.isArray(apiResponse.data)) {
                 newComments = apiResponse.data as Comment[];
-                console.log("Found comments in response.data");
               } else {
                 console.error("Unexpected response structure:", result);
                 newComments = [];
-                console.log("No comments found in response");
               }
             } else {
               console.error("API response or data is undefined:", apiResponse);
@@ -367,25 +315,10 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
           }
 
           if (newComments.length > 0) {
-            console.log(`Found ${newComments.length} comments`);
-            newComments.forEach((comment: Comment, index: number) => {
-              console.log(`Comment ${index + 1}:`, {
-                id: comment.id,
-                is_approved: comment.is_approved,
-                content: comment.content?.substring(0, 30) + "...",
-                author: comment.user?.name || comment.guest_name || "Anonymous",
-              });
-            });
-
             // Filter to only show approved comments
             newComments = newComments.filter(
               (comment: Comment) => comment.is_approved
             );
-            console.log(
-              `${newComments.length} comments are approved and will be displayed`
-            );
-          } else {
-            console.log("No comments found in response");
           }
 
           // Process comments to maintain likes/dislikes between refreshes
@@ -401,17 +334,15 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
           setTotalComments(enhancedComments.length);
 
           // Make sure to save the loaded comments to localStorage
-          console.log("Saving loaded comments to localStorage for persistence");
+
           saveCommentsStatsToLocalStorage(enhancedComments);
         } else {
-          console.log("No data returned from API hook");
           // Remove this automatic forceRefresh call that can cause loops
           // if (!comments.length) {
           //   forceRefresh();
           // }
         }
       } catch (hookError: any) {
-        console.error("Error with API hook:", hookError);
         // Only call forceRefresh in case of a real error, not automatically
         // forceRefresh();
       }
@@ -420,7 +351,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       setComments([]);
 
       if (err.response?.status === 401) {
-        console.log("Unauthorized error, but proceeding to show comment form");
       } else {
         setError("Failed to load comments. Please try again later.");
       }
@@ -435,7 +365,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
   // Save initial comments to localStorage after they load
   useEffect(() => {
     if (comments.length > 0) {
-      console.log("Saving comments to localStorage after comments update");
       saveCommentsStatsToLocalStorage(comments);
     }
   }, [comments]); // Run whenever comments change, not just when the length changes
@@ -444,13 +373,11 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
   useEffect(() => {
     // Only load comments if we have a valid itemId
     if (itemId && !isNaN(Number(itemId))) {
-      console.log(`Initial loading of comments for ${type}/${itemId}`);
       loadComments();
 
       // Check for newly approved comments every 60 seconds
       // This will help show comments that were just approved by an admin
       const newlyApprovedCommentsCheck = setInterval(() => {
-        console.log("Checking for newly approved comments...");
         loadComments();
       }, 60000); // Every 60 seconds
 
@@ -513,15 +440,11 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       setSuccessMessage(null);
 
       const submitEndpoint = `/${type}/${itemId}/comments`; // Remove duplicate v1
-      console.log(`Submitting comment to: ${submitEndpoint}`);
-      console.log(`Content type: ${type}, Item ID: ${itemId}`);
 
       const commentData = {
         content: newComment,
         ...((!isAuthenticated && { guest_name: guestName }) || {}),
       };
-
-      console.log("Comment data being submitted:", commentData);
 
       // Use a more direct approach with axios instead of the useApi hook
       try {
@@ -544,10 +467,8 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
         // Make the POST request
         const fullUrl = `${baseUrl}/${type}/${itemId}/comments`;
-        console.log("Sending direct POST request to:", fullUrl);
 
         const response = await axiosInstance.post(fullUrl, commentData);
-        console.log("Direct axios response:", response);
 
         // Check for success
         if (response.status >= 200 && response.status < 300) {
@@ -656,21 +577,14 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
   // Handle like/dislike
   const handleReaction = (commentId: number, reaction: "like" | "dislike") => {
-    console.log(`Handling ${reaction} reaction for comment ID ${commentId}`);
-
     const currentReaction = likedComments[commentId];
-    console.log(
-      `Current reaction for comment ${commentId}: ${currentReaction || "none"}`
-    );
 
     let newReaction: "like" | "dislike" | null = null;
 
     // Toggle reaction if clicking the same button
     if (currentReaction === reaction) {
-      console.log(`User clicked ${reaction} again, toggling off`);
       newReaction = null;
     } else {
-      console.log(`Setting new reaction to ${reaction}`);
       newReaction = reaction;
     }
 
@@ -679,59 +593,39 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       ...likedComments,
       [commentId]: newReaction,
     };
-    console.log("Setting liked comments to:", updatedLikedComments);
+
     setLikedComments(updatedLikedComments);
 
     // Update the comment counts
     const updatedComments = comments.map((comment) => {
       if (comment.id === commentId) {
-        console.log(`Updating counts for comment ID ${commentId}`);
-        console.log(
-          `Before: likes=${comment.likes || 0}, dislikes=${
-            comment.dislikes || 0
-          }`
-        );
-
         const updatedComment = { ...comment };
 
         // First undo any previous reaction
         if (currentReaction === "like") {
           updatedComment.likes = (updatedComment.likes || 0) - 1;
-          console.log(
-            `Removed previous like, new count: ${updatedComment.likes}`
-          );
         } else if (currentReaction === "dislike") {
           updatedComment.dislikes = (updatedComment.dislikes || 0) - 1;
-          console.log(
-            `Removed previous dislike, new count: ${updatedComment.dislikes}`
-          );
         }
 
         // Then apply new reaction if any
         if (newReaction === "like") {
           updatedComment.likes = (updatedComment.likes || 0) + 1;
-          console.log(`Added new like, new count: ${updatedComment.likes}`);
         } else if (newReaction === "dislike") {
           updatedComment.dislikes = (updatedComment.dislikes || 0) + 1;
-          console.log(
-            `Added new dislike, new count: ${updatedComment.dislikes}`
-          );
         }
 
-        console.log(
-          `After: likes=${updatedComment.likes}, dislikes=${updatedComment.dislikes}`
-        );
         return updatedComment;
       }
       return comment;
     });
 
     // Save updated comments with reaction counts
-    console.log("Setting updated comments:", updatedComments);
+
     setComments(updatedComments);
 
     // Make sure to save immediately to localStorage
-    console.log("Saving updated reaction counts to localStorage...");
+
     saveCommentsStatsToLocalStorage(updatedComments);
 
     // Also save the liked comments separately for redundancy
@@ -739,10 +633,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       localStorage.setItem(
         `likes_${type}_${itemId}`,
         JSON.stringify(updatedLikedComments)
-      );
-      console.log(
-        `Saved liked comments with key: likes_${type}_${itemId}`,
-        updatedLikedComments
       );
     } catch (error) {
       console.error("Error saving liked comments to localStorage:", error);
@@ -753,7 +643,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
   const saveCommentsStatsToLocalStorage = (commentsToSave: Comment[]) => {
     try {
       if (!commentsToSave || commentsToSave.length === 0) {
-        console.log("No comments to save to localStorage");
         return;
       }
 
@@ -790,11 +679,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       localStorage.setItem(mainStorageKey, dataToSave);
       localStorage.setItem(backupStorageKey, dataToSave);
 
-      console.log(
-        `SAVED comment stats to localStorage with keys: ${mainStorageKey} and ${backupStorageKey}`,
-        commentsStats
-      );
-
       // For debugging - immediately verify it was saved correctly
       const mainSavedData = localStorage.getItem(mainStorageKey);
       const backupSavedData = localStorage.getItem(backupStorageKey);
@@ -803,16 +687,9 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       const mainVerified = !!mainSavedData;
       const backupVerified = !!backupSavedData;
 
-      console.log(
-        `Verification - Retrieved ${
-          mainVerified ? "SUCCESSFULLY" : "FAILED"
-        } from main key, backup key ${backupVerified ? "SUCCEEDED" : "FAILED"}`
-      );
-
       if (mainSavedData) {
         try {
           const parsed = JSON.parse(mainSavedData);
-          console.log("Successfully parsed saved data:", parsed);
         } catch (e) {
           console.error("Could not parse saved data:", e);
         }
@@ -853,24 +730,12 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       const storageKey = `${type}_${itemId}_comments_stats`;
       const savedStatsString = localStorage.getItem(storageKey);
 
-      console.log(`DEBUG - Checking localStorage:`, {
-        key: storageKey,
-        rawValue: savedStatsString,
-        itemId: itemId,
-        type: type,
-        commentId: commentId,
-        allLocalStorageKeys: Object.keys(localStorage)
-          .filter((key) => key.includes("comments_stats"))
-          .join(", "),
-      });
-
       if (!savedStatsString) {
         // Also try without the type prefix as a fallback
         const alternateKey = `${itemId}_comments_stats`;
         const altSavedStatsString = localStorage.getItem(alternateKey);
 
         if (altSavedStatsString) {
-          console.log(`Found stats with alternate key: ${alternateKey}`);
           const altSavedStats = JSON.parse(altSavedStatsString);
           const altCommentStats = altSavedStats.find(
             (stat: { id: number }) => stat.id === commentId
@@ -878,35 +743,24 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
           return altCommentStats || null;
         }
 
-        console.log(`No stats found in localStorage for key: ${storageKey}`);
         return null;
       }
 
       let savedStats;
       try {
         savedStats = JSON.parse(savedStatsString);
-        console.log(
-          `Retrieved stats from localStorage for key: ${storageKey}`,
-          savedStats
-        );
       } catch (parseError) {
         console.error(
           `Error parsing localStorage data for ${storageKey}:`,
           parseError
         );
-        console.log("Raw data from localStorage:", savedStatsString);
+
         return null;
       }
 
       // Try to find the comment by ID
       const commentStats = savedStats.find(
         (stat: { id: number }) => stat.id === commentId
-      );
-
-      console.log(
-        commentStats
-          ? `Found stats for comment ${commentId}: likes=${commentStats.likes}, dislikes=${commentStats.dislikes}`
-          : `No stats found for comment ${commentId} in savedStats`
       );
 
       return commentStats || null;

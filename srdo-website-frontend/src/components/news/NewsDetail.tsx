@@ -21,9 +21,7 @@ class ErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("NewsDetail error caught:", error, errorInfo);
-  }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {}
 
   render() {
     if (this.state.hasError) {
@@ -91,8 +89,6 @@ const getImageUrl = (
   articleTitle?: string,
   category?: string
 ): string => {
-  console.log("Processing image URL:", imageUrl);
-
   if (!imageUrl) {
     // Use local fallback image
     return "/images/news/placeholder.jpg";
@@ -100,13 +96,11 @@ const getImageUrl = (
 
   // If it's already a full URL, return it as is
   if (imageUrl.startsWith("http")) {
-    console.log("URL is already absolute:", imageUrl);
     return imageUrl;
   }
 
   // If it starts with '/images', it's a local image
   if (imageUrl.startsWith("/images")) {
-    console.log("Using local image:", imageUrl);
     return imageUrl;
   }
 
@@ -123,7 +117,7 @@ const getImageUrl = (
 
   // Construct the final URL with the storage path
   const fullUrl = `${baseUrl}/storage/news/${cleanPath}`;
-  console.log("✅ Constructed storage URL:", fullUrl);
+
   return fullUrl;
 };
 
@@ -160,7 +154,6 @@ const safeValue = (value: any, defaultValue: any) => {
 
     return value;
   } catch (e) {
-    console.error("Error accessing value:", e);
     return defaultValue;
   }
 };
@@ -191,37 +184,18 @@ const NewsDetail: React.FC = () => {
     const loadArticle = async () => {
       if (!slug) return;
 
-      console.log("Fetching article with slug:", slug);
       setIsLoading(true);
 
       try {
         // Method 1: Try using the newsService
         try {
-          console.log("Method 1: Using newsService to fetch article");
           const response = await newsService.getArticleBySlug(slug);
 
           if (response && response.data) {
-            console.log(
-              "Article successfully fetched with newsService:",
-              response.data
-            );
-
-            // Debug the data structure we received
-            console.log("Data structure check:", {
-              has_id: Boolean(response.data.id),
-              has_title: Boolean(response.data.title),
-              has_content: Boolean(response.data.content),
-              has_created_at: Boolean(response.data.created_at),
-              has_updated_at: Boolean(response.data.updated_at),
-              is_published_field: response.data.is_published,
-              published_at_field: response.data.published_at,
-            });
-
             // Data is already transformed in the service, just set it directly
             setArticle(response.data);
             return; // Exit if successful
           } else {
-            console.error("Invalid response format or empty data:", response);
           }
         } catch (serviceError: any) {
           const errorDetails = {
@@ -229,35 +203,23 @@ const NewsDetail: React.FC = () => {
             response: serviceError?.response?.data,
             status: serviceError?.response?.status,
           };
-          console.error("newsService method failed:", errorDetails);
         }
 
         // Method 2: Try using the API hook directly
         try {
-          console.log("Method 2: Using useApi hook directly");
           const response = await fetchArticle("GET", `/news/slug/${slug}`);
 
           if (response && response.data) {
-            console.log(
-              "Article successfully fetched with useApi hook:",
-              response.data
-            );
-
             // The data is set automatically by the hook, but we need to ensure all required fields are present
             return; // Exit if successful
           }
         } catch (apiError: any) {
-          console.error(
-            "useApi hook method failed:",
-            apiError?.message || apiError
-          );
           throw apiError; // Propagate this error if both methods fail
         }
 
         // If we get here, both methods failed but didn't throw (e.g., returned null data)
         throw new Error("Could not retrieve article data from either method");
       } catch (err: any) {
-        console.error("All article fetch methods failed:", err?.message || err);
         setArticleError({
           message: "Failed to load article. Please try again later.",
           status: 404,

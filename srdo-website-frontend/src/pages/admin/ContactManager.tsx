@@ -33,7 +33,6 @@ const ContactManager: React.FC = () => {
 
   // Handle page changes
   const handlePageChange = (page: number) => {
-    console.log("Changing page to:", page, "from:", currentPage);
     // Force loading state to provide feedback to the user
     setLoading(true);
     // Update our ref immediately to track the latest request
@@ -54,7 +53,6 @@ const ContactManager: React.FC = () => {
   const fetchContacts = async () => {
     try {
       setLoading(true);
-      console.log("Fetching contacts...");
 
       // Update endpoint to match the backend API routes
       // The API service baseURL already includes /api/v1, so we don't need to prefix with /api
@@ -64,13 +62,11 @@ const ContactManager: React.FC = () => {
           per_page: 100, // Get more contacts at once to reduce API calls
         },
       });
-      console.log("Contacts response:", response);
 
       let allContacts: Contact[] = [];
 
       // Check if the response itself is the contacts array
       if (Array.isArray(response)) {
-        console.log("Response is directly an array of contacts");
         allContacts = response;
       } else if (response && response.data) {
         // Handle different response structures
@@ -88,8 +84,6 @@ const ContactManager: React.FC = () => {
         }
       }
 
-      console.log("Processed contacts data:", allContacts);
-
       if (allContacts.length > 0) {
         // Store all contacts in our cache
         setAllContactsCache(allContacts);
@@ -100,9 +94,6 @@ const ContactManager: React.FC = () => {
         // Calculate total pages
         const totalFilteredCount = filteredContacts.length;
         const calculatedTotalPages = Math.ceil(totalFilteredCount / perPage);
-        console.log(
-          `Total filtered contacts: ${totalFilteredCount}, Total pages: ${calculatedTotalPages}`
-        );
 
         setTotalPages(calculatedTotalPages > 0 ? calculatedTotalPages : 1);
         setTotalItems(totalFilteredCount);
@@ -142,28 +133,17 @@ const ContactManager: React.FC = () => {
     const startIndex = (pageNumber - 1) * perPage;
     const totalItems = filteredContacts.length;
 
-    console.log(
-      `Paginating contacts: ${totalItems} total, page ${pageNumber}, start index ${startIndex}`
-    );
-
     // Make sure we don't go past the end of the array
     if (startIndex < filteredContacts.length) {
       const paginatedContacts = filteredContacts.slice(
         startIndex,
         Math.min(startIndex + perPage, filteredContacts.length)
       );
-      console.log(
-        `Showing contacts ${startIndex + 1}-${
-          startIndex + paginatedContacts.length
-        } of ${filteredContacts.length}`
-      );
+
       setContacts(paginatedContacts);
     } else if (filteredContacts.length > 0) {
       // If somehow the start index is beyond the array length, go to last page
       const lastPageNumber = Math.ceil(filteredContacts.length / perPage);
-      console.log(
-        `Start index out of bounds, going to last page: ${lastPageNumber}`
-      );
 
       const lastPageStartIndex = (lastPageNumber - 1) * perPage;
       setCurrentPage(lastPageNumber);
@@ -176,7 +156,7 @@ const ContactManager: React.FC = () => {
       setContacts(lastPageContacts);
     } else {
       // No contacts at all
-      console.log("No contacts available");
+
       setContacts([]);
     }
   };
@@ -185,7 +165,6 @@ const ContactManager: React.FC = () => {
     try {
       // Use the correct API endpoint without v1 prefix
       const response = await put(`/contacts/${id}/read`);
-      console.log("Mark as read response:", response);
 
       // Update both the displayed contacts and the cached contacts
       const updateContact = (contact: Contact) =>

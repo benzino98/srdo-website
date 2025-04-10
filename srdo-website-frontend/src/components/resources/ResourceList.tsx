@@ -109,7 +109,6 @@ const ResourceList: React.FC<ResourceListProps> = ({
     if (resourcesData) {
       // Extract resources from the API response
       const resources = getDisplayResourcesFromData(resourcesData);
-      console.log(`Retrieved ${resources.length} resources from API response`);
 
       // Store all resources in cache for client-side pagination
       setAllResourcesCache(resources);
@@ -186,7 +185,6 @@ const ResourceList: React.FC<ResourceListProps> = ({
   };
 
   const handlePageChange = (page: number) => {
-    console.log("Changing page to:", page);
     // Update the page ref immediately
     latestPageRef.current = page;
     // Update the UI state
@@ -197,10 +195,6 @@ const ResourceList: React.FC<ResourceListProps> = ({
 
   const handleDownload = async (resource: Resource) => {
     try {
-      console.log(
-        `Initiating download for resource: ${resource.id} - ${resource.title}`
-      );
-
       // Set the downloading resource ID to show loading animation
       setDownloadingResourceId(resource.id);
 
@@ -215,8 +209,6 @@ const ResourceList: React.FC<ResourceListProps> = ({
         // Clear the downloading state
         setDownloadingResourceId(null);
       }, 1500);
-
-      console.log("Download process completed successfully");
     } catch (error) {
       console.error("Failed to download resource:", error);
       alert("Download failed. Please try again later.");

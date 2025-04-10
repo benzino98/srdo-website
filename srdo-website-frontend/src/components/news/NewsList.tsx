@@ -49,23 +49,19 @@ const getImageUrl = (
   articleTitle?: string,
   category?: string
 ): string => {
-  console.log("NewsList - Processing image URL:", imageUrl);
-
   if (!imageUrl) {
     // Use local fallback image
-    console.log("NewsList - Using fallback image for null/undefined URL");
+
     return "/images/news/placeholder.jpg";
   }
 
   // If it's already a full URL, return it as is
   if (imageUrl.startsWith("http")) {
-    console.log("NewsList - URL is already absolute:", imageUrl);
     return imageUrl;
   }
 
   // If it starts with '/images', it's a local image
   if (imageUrl.startsWith("/images")) {
-    console.log("NewsList - Using local image:", imageUrl);
     return imageUrl;
   }
 
@@ -73,18 +69,15 @@ const getImageUrl = (
   const apiUrl =
     process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
   const baseUrl = apiUrl.replace(/\/api.*$/, "").replace(/\/+$/, "");
-  console.log("NewsList - Base URL:", baseUrl);
 
   // Clean up the image path
   const cleanPath = imageUrl
     .replace(/^\/+/, "") // Remove leading slashes
     .replace(/^storage\//, "") // Remove storage/ prefix if present
     .replace(/^news\//, ""); // Remove news/ prefix if present
-  console.log("NewsList - Cleaned path:", cleanPath);
 
   // Construct the final URL with the storage path
   const fullUrl = `${baseUrl}/storage/news/${cleanPath}`;
-  console.log("NewsList - Constructed storage URL:", fullUrl);
 
   return fullUrl;
 };
@@ -168,25 +161,11 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
   }, [category]);
 
   // Debug the current state
-  console.log("NewsList render:", {
-    data,
-    loading,
-    error,
-    articles,
-    pagination,
-  });
 
   // Log image URLs to debug
   useEffect(() => {
     if (data && data.data && data.data.length > 0) {
-      console.log("Detailed article data inspection:");
-      console.log("Raw news data:", data);
-
       data.data.forEach((article: NewsItem) => {
-        console.log(`\nArticle #${article.id}:`);
-        console.log("- Title:", article.title);
-        console.log("- Image URL (raw):", article.image_url);
-
         // Test constructing the image URL
         if (article.image_url) {
           const constructedUrl = getImageUrl(
@@ -194,7 +173,6 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
             article.title,
             category
           );
-          console.log("- Image URL (constructed):", constructedUrl);
         }
       });
     }
@@ -214,10 +192,7 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
         per_page: 100, // Increase to ensure all news articles are fetched
       };
 
-      console.log("Fetching news with params:", params);
-
       const result = await get("/news", { params });
-      console.log("Raw API response:", result);
 
       // Handle the specific backend format where data is directly in result.data, not result.data.data
       if (result?.data) {
@@ -261,10 +236,6 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
         }
 
         if (Array.isArray(newsData) && newsData.length > 0) {
-          console.log(
-            `News data loaded successfully: ${newsData.length} articles`
-          );
-
           // Update both state variables with the correct data
           setData({
             data: newsData,
@@ -300,7 +271,6 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
   useEffect(() => {
     loadNews();
     // Debug log to track when loadNews is called
-    console.log("loadNews called with:", { category, searchTerm });
   }, [category, searchTerm]); // Remove currentPage from dependencies
 
   const handleCategoryChange = (category: string) => {
@@ -320,7 +290,6 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
   };
 
   const handlePageChange = (page: number) => {
-    console.log("Changing page to:", page);
     // Update the page ref immediately
     latestPageRef.current = page;
     // Update the UI state
@@ -354,10 +323,7 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
   ];
 
   const renderArticles = () => {
-    console.log("renderArticles called with:", articles);
-
     if (!articles || !Array.isArray(articles) || articles.length === 0) {
-      console.log("No articles to render");
       return <div className="text-center py-4">No articles available</div>;
     }
 
@@ -366,11 +332,8 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
 
     articles.forEach((article: NewsItem) => {
       if (!article || !article.id) {
-        console.log("Invalid article object:", article);
         return; // Skip this iteration
       }
-
-      console.log("Rendering article:", article.id, article.title);
 
       articleElements.push(
         <motion.div
@@ -497,7 +460,6 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
         </div>
       ) : (
         (() => {
-          console.log("Rendering news section with articles:", articles);
           return (
             <>
               {articles && articles.length > 0 ? (

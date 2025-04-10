@@ -7,12 +7,6 @@ export const TOKEN_KEY = "srdo_token";
 // Ensure API_URL correctly includes /v1 to prevent path duplication in requests
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
-// Debug log for API base URL
-console.log("API Service Initialization:", {
-  API_URL,
-  NODE_ENV: process.env.NODE_ENV,
-});
-
 // Create axios instance with default config
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -79,9 +73,6 @@ api.interceptors.request.use(
       // Ensure Authorization header is properly set with Bearer token
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-      console.warn(
-        "No auth token found for request. Authentication might fail."
-      );
     }
 
     // Don't set Content-Type for FormData
@@ -141,26 +132,7 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    console.error("Response Interceptor - Error:", {
-      message: error.message,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method,
-      headers: error.config?.headers,
-      data: error.response?.data,
-    });
-
     if (!error.response) {
-      console.error("Network or CORS Error Details:", {
-        message: error.message,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          baseURL: error.config?.baseURL,
-          headers: error.config?.headers,
-        },
-      });
       return Promise.reject({
         message: "Network error. Please check your connection and try again.",
         isNetworkError: true,
@@ -169,10 +141,6 @@ api.interceptors.response.use(
 
     // Handle 401 Unauthorized errors
     if (error.response.status === 401) {
-      console.warn(
-        "Unauthorized access detected. Token might be invalid or expired."
-      );
-
       // Get the original request config
       const originalRequest = error.config;
 
@@ -251,11 +219,6 @@ api.interceptors.response.use(
                 return api(originalRequest);
               }
             } catch (publicRefreshError) {
-              console.warn(
-                "Public refresh failed, trying standard refresh",
-                publicRefreshError
-              );
-
               // Fall back to the regular refresh method
               const refreshSuccess = await authService.refreshToken();
 
@@ -280,9 +243,7 @@ api.interceptors.response.use(
             }
 
             // If we get here, both refresh methods failed
-            console.warn(
-              "All token refresh methods failed, redirecting to login"
-            );
+
             isRefreshing = false;
             onRefreshFailed(error);
 
@@ -299,7 +260,6 @@ api.interceptors.response.use(
 
             return Promise.reject(error);
           } catch (refreshError) {
-            console.error("Error during token refresh:", refreshError);
             isRefreshing = false;
             onRefreshFailed(refreshError);
             return Promise.reject(error);
@@ -331,7 +291,6 @@ const handleApiResponse = async <T>(promise: Promise<any>): Promise<T> => {
     // Return the entire response data as it's already typed correctly
     return response.data;
   } catch (error: any) {
-    console.error("API Error:", error);
     throw error.response?.data || error;
   }
 };
@@ -353,7 +312,6 @@ export const projectApi = {
         const response = await api.get(`/projects/${projectId}`, config);
         return response;
       } catch (secondErr) {
-        console.error("[Project API] Both request attempts failed");
         throw secondErr; // Re-throw the error
       }
     }
@@ -386,7 +344,6 @@ const apiService = {
         message: `API connection successful: ${JSON.stringify(response.data)}`,
       };
     } catch (error: any) {
-      console.error("API connection test error:", error);
       return {
         status: "error",
         message: `API connection test failed: ${error.message}`,

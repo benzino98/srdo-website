@@ -49,7 +49,6 @@ class AuthService {
     try {
       return JSON.parse(userStr);
     } catch (e) {
-      console.error("Error parsing user data:", e);
       this.logout(); // Clear invalid data
       return null;
     }
@@ -90,8 +89,6 @@ class AuthService {
 
       return user;
     } catch (error: any) {
-      console.error("Login error:", error);
-
       const authError: AuthError = new Error(
         error.response?.data?.message || error.message || "Login failed"
       );
@@ -120,7 +117,6 @@ class AuthService {
     try {
       return await apiService.testConnection();
     } catch (error: any) {
-      console.error("API connection test failed:", error);
       return {
         status: "error",
         message: error.message || "Connection test failed",
@@ -143,7 +139,6 @@ class AuthService {
       const currentToken = localStorage.getItem(TOKEN_KEY);
 
       if (!currentToken) {
-        console.warn("No token available to refresh");
         this.isRefreshing = false;
         return false;
       }
@@ -168,8 +163,6 @@ class AuthService {
         return true;
       }
     } catch (error) {
-      console.error("AUTH SERVICE: Primary refresh failed", error);
-
       try {
         // Fallback to public refresh endpoint
         const API_URL =
@@ -177,7 +170,6 @@ class AuthService {
         const currentToken = localStorage.getItem(TOKEN_KEY);
 
         if (!currentToken) {
-          console.warn("No token available for fallback refresh");
           this.isRefreshing = false;
           return false;
         }
@@ -200,15 +192,9 @@ class AuthService {
           this.isRefreshing = false;
           return true;
         }
-      } catch (fallbackError) {
-        console.error(
-          "AUTH SERVICE: Fallback refresh also failed",
-          fallbackError
-        );
-      }
+      } catch (fallbackError) {}
     }
 
-    console.warn("AUTH SERVICE: All token refresh attempts failed");
     this.isRefreshing = false;
 
     // Even if refresh failed, allow the operation to continue with existing token
@@ -230,7 +216,6 @@ class AuthService {
 
       return response.data?.valid ?? false;
     } catch (error) {
-      console.error("Token verification failed:", error);
       return false;
     }
   }

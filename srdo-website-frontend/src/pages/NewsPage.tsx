@@ -3,11 +3,7 @@ import NewsList from "../components/news/NewsList";
 import { motion } from "framer-motion";
 
 const NewsPage: React.FC = () => {
-  useEffect(() => {
-    console.log("NewsPage mounted - rendering NewsList component");
-  }, []);
-
-  console.log("Rendering NewsPage component");
+  useEffect(() => {}, []);
 
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white py-16">

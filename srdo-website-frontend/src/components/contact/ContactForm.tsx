@@ -56,7 +56,6 @@ const ContactForm: React.FC = () => {
         });
       }
     } catch (error: any) {
-      console.error("Form submission error:", error);
       setSubmitError(
         error.response?.data?.message ||
           "There was an error submitting the form. Please try again later."

@@ -34,8 +34,6 @@ const AdminDashboard: React.FC = () => {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      console.log("Fetching dashboard stats...");
-      console.log("Auth state:", { isAuthenticated, user });
 
       if (!isAuthenticated) {
         console.error("User is not authenticated");
@@ -45,25 +43,14 @@ const AdminDashboard: React.FC = () => {
       }
 
       const token = localStorage.getItem("srdo_token");
-      console.log("Auth token present:", !!token);
 
       // Use API_URL constant to ensure we're using the correct endpoint
       const API_URL =
         process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-      console.log(
-        `Making dashboard stats request to: ${API_URL}/dashboard/stats`
-      );
 
       const response = await get("/dashboard/stats");
-      console.log("Dashboard stats raw response:", response);
 
       if (response) {
-        console.log("Response structure:", {
-          responseType: typeof response,
-          hasData: "data" in (response || {}),
-          nestedDataType: response?.data ? typeof response.data : "undefined",
-        });
-
         // Case 1: Response has a nested data structure (common Laravel API pattern)
         if (
           response.data &&
@@ -71,10 +58,6 @@ const AdminDashboard: React.FC = () => {
           "data" in response.data
         ) {
           const nestedData = response.data.data as any;
-          console.log(
-            "Case 1 - Dashboard stats in nested data.data property:",
-            nestedData
-          );
 
           if (nestedData && typeof nestedData === "object") {
             setStats({
@@ -88,11 +71,6 @@ const AdminDashboard: React.FC = () => {
         }
         // Case 2: Response has a direct data property with stats
         else if (response.data && typeof response.data === "object") {
-          console.log(
-            "Case 2 - Dashboard stats in direct data property:",
-            response.data
-          );
-
           const data = response.data as any;
           setStats({
             projects_count: parseInt(data.projects_count) || 0,
@@ -104,11 +82,6 @@ const AdminDashboard: React.FC = () => {
         }
         // Case 3: Response is itself the stats object
         else if (typeof response === "object" && response !== null) {
-          console.log(
-            "Case 3 - Dashboard stats directly in response:",
-            response
-          );
-
           const directData = response as any;
           setStats({
             projects_count: parseInt(directData.projects_count) || 0,
@@ -153,8 +126,6 @@ const AdminDashboard: React.FC = () => {
       const API_URL =
         process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
-      console.log("Checking server status at:", `${API_URL}/ping`);
-
       // Try the ping endpoint without adding another /v1
       await axios.get(`${API_URL}/ping`, {
         timeout: 8000,
@@ -165,7 +136,6 @@ const AdminDashboard: React.FC = () => {
       });
 
       setServerStatus("online");
-      console.log("Backend server is online");
 
       // Also fetch the dashboard stats
       await fetchDashboardStats();
@@ -182,7 +152,6 @@ const AdminDashboard: React.FC = () => {
     // Set up a periodic refresh of the stats every 60 seconds when the dashboard is visible
     const intervalId = setInterval(() => {
       if (document.visibilityState === "visible") {
-        console.log("Auto-refreshing dashboard stats");
         fetchDashboardStats();
       }
     }, 60000);

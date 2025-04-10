@@ -75,7 +75,6 @@ const NewsList: React.FC = () => {
       process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
     try {
-      console.log("Checking server status...");
       const response = await axios.get(`${API_URL}/ping`, {
         timeout: 5000,
         headers: {
@@ -83,7 +82,7 @@ const NewsList: React.FC = () => {
           "X-Requested-With": "XMLHttpRequest",
         },
       });
-      console.log("Server is online:", response.data);
+
       setIsOfflineMode(false);
     } catch (error) {
       console.error("Server check failed:", error);
@@ -116,7 +115,6 @@ const NewsList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("Fetching news articles for admin dashboard...");
 
       const params: any = {
         per_page: perPage,
@@ -130,14 +128,10 @@ const NewsList: React.FC = () => {
 
       const response = await get("/news", { params });
 
-      console.log("API Response for news list:", response);
-
       if (response && response.data) {
         const articleData = Array.isArray(response.data)
           ? response.data
           : response.data.data || [];
-
-        console.log("Processed article data:", articleData);
 
         const mappedArticles = articleData.map((article: any) => ({
           ...article,
@@ -174,7 +168,6 @@ const NewsList: React.FC = () => {
         try {
           const parsedArticles = JSON.parse(offlineArticles);
           if (Array.isArray(parsedArticles) && parsedArticles.length > 0) {
-            console.log("Loading articles from localStorage as fallback");
             setArticles(parsedArticles);
             setError(
               "Could not connect to server. Showing locally stored articles instead."
@@ -211,11 +204,9 @@ const NewsList: React.FC = () => {
       try {
         setDeleteInProgress(true);
         setError(null);
-        console.log(`Attempting to delete news article with ID: ${id}`);
 
         // Use the newsService instead of direct API call
         await newsService.deleteArticle(id);
-        console.log("News article deleted successfully");
 
         // Filter out the deleted article from state
         setArticles(articles.filter((article) => article.id !== id));

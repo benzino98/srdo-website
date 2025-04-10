@@ -36,9 +36,8 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      console.log(`Login attempt ${loginAttempts + 1} with email: ${email}`);
       await login({ email, password });
-      console.log("Login successful, navigating to:", from);
+
       navigate(from, { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
@@ -50,7 +49,6 @@ const LoginPage: React.FC = () => {
 
       // Show alert for debugging purposes
       if (process.env.NODE_ENV !== "production") {
-        console.log("Development mode detected, showing details");
         alert(`Login Error Details:\n${err.message || JSON.stringify(err)}`);
       }
     } finally {

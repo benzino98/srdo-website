@@ -63,11 +63,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   const checkServerStatus = async () => {
     try {
       await axios.get(`${API_CONFIG.API_URL}/ping`, { timeout: 3000 });
-      console.log("Server is online");
+
       setIsServerOnline(true);
       return true;
     } catch (error) {
-      console.log("Server appears to be offline:", error);
       setIsServerOnline(false);
       return false;
     }
@@ -75,8 +74,6 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
   // Verify and potentially refresh authentication
   const verifyAuth = async (): Promise<boolean> => {
-    console.log("Verifying authentication...");
-
     // Get current token
     const token = authService.getToken();
 
@@ -87,14 +84,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
     // Check if it's the mock token
     if (token.includes("mock-signature-for-testing-only")) {
-      console.log(
-        "Mock token detected, attempting to re-authenticate with test credentials"
-      );
-
       // Check if server is online
       const serverOnline = await checkServerStatus();
       if (!serverOnline) {
-        console.log("Server offline, proceeding with mock token");
         return true; // Allow mock auth when offline
       }
 
@@ -115,7 +107,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     // Verify the token with the server
     try {
       const isValid = await authService.verifyToken();
-      console.log("Token verification result:", isValid);
+
       return isValid;
     } catch (error) {
       console.error("Error verifying token:", error);
@@ -146,7 +138,6 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             `${API_CONFIG.API_URL}/v1/projects/${projectId}`,
             { headers }
           );
-          console.log("Fetched project data:", response.data);
 
           const projectData = response.data.data || response.data;
 
@@ -254,8 +245,6 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         API_CONFIG.STORAGE_KEYS.OFFLINE_PROJECTS,
         JSON.stringify(updatedProjects)
       );
-
-      console.log("Project saved locally:", newProject);
 
       return newProject.id;
     } catch (error) {

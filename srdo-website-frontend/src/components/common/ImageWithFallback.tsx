@@ -28,16 +28,13 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
 
   // Use useCallback to memoize the error handler
   const handleError = useCallback(() => {
-    console.log(`Image failed to load: ${imgSrc}`);
-    console.log(`Original source: ${src}`);
-
     if (imgSrc !== fallbackSrc && fallbackSrc) {
       // Try the fallback
-      console.log(`Trying fallback: ${fallbackSrc}`);
+
       setImgSrc(fallbackSrc);
     } else {
       // If fallback also fails, show placeholder
-      console.log("Using placeholder - all image sources failed");
+
       setHasError(true);
     }
   }, [imgSrc, fallbackSrc, src]);

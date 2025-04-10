@@ -23,22 +23,17 @@ const categories = ["news", "update", "press"];
 
 // Function to ensure proper URL format for images
 const getImageUrl = (imageUrl: string | null | undefined): string => {
-  console.log("Processing image URL:", imageUrl);
-
   if (!imageUrl) {
-    console.log("No image URL provided, returning empty string");
     return "";
   }
 
   // If it's already a full URL, return it as is
   if (imageUrl.startsWith("http")) {
-    console.log("URL is already absolute:", imageUrl);
     return imageUrl;
   }
 
   // If it's a data URL (from file input preview), return as is
   if (imageUrl.startsWith("data:")) {
-    console.log("Image is a data URL, returning as is");
     return imageUrl;
   }
 
@@ -46,15 +41,13 @@ const getImageUrl = (imageUrl: string | null | undefined): string => {
   const apiUrl =
     process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
   const baseUrl = apiUrl.replace(/\/api.*$/, "").replace(/\/+$/, "");
-  console.log("Base URL for image:", baseUrl);
 
   // Clean up the image path to ensure it starts with /
   const cleanPath = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-  console.log("Cleaned image path:", cleanPath);
 
   // Construct the full URL
   const fullUrl = `${baseUrl}${cleanPath}`;
-  console.log("Constructed full image URL:", fullUrl);
+
   return fullUrl;
 };
 
@@ -103,24 +96,13 @@ const NewsEditor: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("Fetching article with ID:", id);
-
-      // Add detailed debugging for API and authentication
-      console.log("API Base URL:", process.env.REACT_APP_API_URL);
-      console.log(
-        "Authentication status:",
-        isAuthenticated ? "Authenticated" : "Not authenticated"
-      );
 
       // Try using direct newsService call first
       try {
-        console.log("Attempting to fetch article using newsService...");
         const response = await newsService.getArticle(id!);
-        console.log("Article fetched with newsService:", response);
 
         if (response && response.data) {
           const article = response.data;
-          console.log("Article data:", article);
 
           if (article.published_at) {
             article.published_at = article.published_at.split("T")[0];
@@ -137,10 +119,7 @@ const NewsEditor: React.FC = () => {
 
           if (article.image_url) {
             const fullImageUrl = getImageUrl(article.image_url);
-            console.log(
-              "Setting image preview with processed URL:",
-              fullImageUrl
-            );
+
             setImagePreview(fullImageUrl);
           }
 
@@ -156,18 +135,6 @@ const NewsEditor: React.FC = () => {
 
       // Original approach using useApi hook
       const response = await get(`/news/${id}`);
-      console.log("Raw API response:", response);
-
-      // More detailed inspection of the response structure
-      if (response) {
-        console.log("Response structure:", {
-          hasData: !!response.data,
-          dataType: response.data ? typeof response.data : "undefined",
-          isDataObject: response.data
-            ? typeof response.data === "object"
-            : false,
-        });
-      }
 
       // Check if response exists and has data property with actual content
       if (
@@ -181,7 +148,6 @@ const NewsEditor: React.FC = () => {
           article.published_at = article.published_at.split("T")[0];
         }
 
-        console.log("Setting form data with:", article);
         setFormData({
           title: article.title || "",
           content: article.content || "",
@@ -193,10 +159,7 @@ const NewsEditor: React.FC = () => {
 
         if (article.image_url) {
           const fullImageUrl = getImageUrl(article.image_url);
-          console.log(
-            "Setting image preview with processed URL:",
-            fullImageUrl
-          );
+
           setImagePreview(fullImageUrl);
         }
       } else {
@@ -325,11 +288,9 @@ const NewsEditor: React.FC = () => {
 
     try {
       const response = await newsService.createArticle(formDataToSend);
-      console.log("Article created successfully:", response);
     } catch (error) {
       console.error("Failed to create article with newsService:", error);
       const response = await post("/news", formDataToSend, config);
-      console.log("Article created successfully with useApi hook:", response);
     }
   };
 
@@ -350,17 +311,12 @@ const NewsEditor: React.FC = () => {
       keep_existing_image: !imageFile && !!imagePreview ? 1 : 0,
     };
 
-    console.log("Updating article with JSON data:", jsonData);
-
     // Try all available methods to update the article
     try {
       // First try the newsService JSON method
-      console.log("Attempting to update with newsService.updateArticleJson...");
+
       const response = await newsService.updateArticleJson(id!, jsonData);
-      console.log(
-        "Article updated successfully with newsService JSON:",
-        response
-      );
+
       return response;
     } catch (serviceJsonError) {
       console.warn(
@@ -371,9 +327,6 @@ const NewsEditor: React.FC = () => {
       // Next try the regular newsService FormData method
       if (imageFile) {
         try {
-          console.log(
-            "Trying newsService.updateArticle with FormData for image..."
-          );
           const formDataToSend = new FormData();
 
           // Add basic fields to FormData
@@ -395,10 +348,7 @@ const NewsEditor: React.FC = () => {
             id!,
             formDataToSend
           );
-          console.log(
-            "Article updated with newsService FormData:",
-            formDataResponse
-          );
+
           return formDataResponse;
         } catch (serviceFormError) {
           console.warn(
@@ -415,7 +365,6 @@ const NewsEditor: React.FC = () => {
         const apiUrl =
           process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
         const endpoint = `${apiUrl}/news/${id}`;
-        console.log("Making direct axios PUT request to:", endpoint);
 
         // Get authentication token
         const token = localStorage.getItem("srdo_token");
@@ -431,7 +380,6 @@ const NewsEditor: React.FC = () => {
           await axios.get(`${baseUrl}/sanctum/csrf-cookie`, {
             withCredentials: true,
           });
-          console.log("CSRF token fetched successfully");
         } catch (csrfError) {
           console.error("Failed to fetch CSRF token:", csrfError);
           // Continue anyway
@@ -456,10 +404,6 @@ const NewsEditor: React.FC = () => {
           withCredentials: true,
         });
 
-        console.log(
-          "Article updated successfully with direct axios:",
-          response
-        );
         return response.data;
       } catch (axiosError) {
         console.error("All update methods failed:", axiosError);
@@ -471,17 +415,11 @@ const NewsEditor: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log("New image selected:", {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: `${(file.size / 1024).toFixed(2)} KB`,
-      });
-
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const previewUrl = reader.result as string;
-        console.log("Image preview generated successfully");
+
         setImagePreview(previewUrl);
       };
       reader.onerror = () => {
@@ -490,7 +428,6 @@ const NewsEditor: React.FC = () => {
       };
       reader.readAsDataURL(file);
     } else {
-      console.log("No file selected or file selection canceled");
     }
   };
 

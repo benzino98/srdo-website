@@ -48,15 +48,12 @@ const AdminLoginPage: React.FC = () => {
     }
 
     try {
-      console.log("Attempting login with:", email);
-
       // First test the API connection
       try {
         const connectionTest = await authService.testApiConnection();
         if (connectionTest.status !== "success") {
           throw new Error(connectionTest.message);
         }
-        console.log("API connection successful:", connectionTest.message);
       } catch (connectionError: any) {
         console.error("API connection test failed:", connectionError);
         setError(`Connection error: ${connectionError.message}`);

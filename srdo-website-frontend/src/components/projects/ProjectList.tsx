@@ -252,8 +252,6 @@ const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
         return dateB - dateA; // Descending order
       });
 
-      console.log(`Retrieved ${allProjects.length} projects from API response`);
-
       // Store all projects in cache
       setAllProjectsCache(allProjects);
     }

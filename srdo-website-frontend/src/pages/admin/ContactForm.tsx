@@ -39,23 +39,22 @@ const ContactForm: React.FC = () => {
 
     try {
       setLoading(true);
-      console.log(`Fetching contact message with ID: ${id}`);
+
       // Use the correct API endpoint
       const response = await get(`/contacts/${id}`);
-      console.log("Contact response:", response);
 
       if (response && response.data) {
         // Handle different response formats
         if (typeof response.data === "object" && response.data.id) {
           // Direct object response
-          console.log("Setting form data from direct object response");
+
           setFormData(response.data);
         } else if (
           response.data.data &&
           typeof response.data.data === "object"
         ) {
           // Nested data property (Laravel API format)
-          console.log("Setting form data from nested data property");
+
           setFormData(response.data.data);
         } else {
           console.warn("Unrecognized data format:", response.data);

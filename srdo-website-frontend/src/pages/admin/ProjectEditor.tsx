@@ -27,22 +27,17 @@ interface ProjectFormData {
 
 // Function to ensure proper URL format for images
 const getImageUrl = (imageUrl: string | null | undefined): string => {
-  console.log("Processing image URL:", imageUrl);
-
   if (!imageUrl) {
-    console.log("No image URL provided, returning empty string");
     return "";
   }
 
   // If it's already a full URL, return it as is
   if (imageUrl.startsWith("http")) {
-    console.log("URL is already absolute:", imageUrl);
     return imageUrl;
   }
 
   // If it's a data URL (from file input preview), return as is
   if (imageUrl.startsWith("data:")) {
-    console.log("Image is a data URL, returning as is");
     return imageUrl;
   }
 
@@ -50,15 +45,13 @@ const getImageUrl = (imageUrl: string | null | undefined): string => {
   const apiUrl =
     process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
   const baseUrl = apiUrl.replace(/\/api.*$/, "").replace(/\/+$/, "");
-  console.log("Base URL for image:", baseUrl);
 
   // Clean up the image path to ensure it starts with /
   const cleanPath = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-  console.log("Cleaned image path:", cleanPath);
 
   // Construct the full URL
   const fullUrl = `${baseUrl}${cleanPath}`;
-  console.log("Constructed full image URL:", fullUrl);
+
   return fullUrl;
 };
 
@@ -114,13 +107,10 @@ const ProjectEditor: React.FC = () => {
   const fetchProject = async () => {
     try {
       setLoading(true);
-      console.log("Fetching project with ID:", id);
 
       // Try using the project service first
       try {
-        console.log("Attempting to fetch project using projectService...");
         const project = await projectService.getProject(id!);
-        console.log("Project fetched with projectService:", project);
 
         // Format dates for form input
         if (project.start_date) {
@@ -130,7 +120,6 @@ const ProjectEditor: React.FC = () => {
           project.end_date = project.end_date.split("T")[0];
         }
 
-        console.log("Setting form data with:", project);
         // Fix type conversion by ensuring all required fields are present
         setFormData({
           title: project.title || "",
@@ -150,7 +139,6 @@ const ProjectEditor: React.FC = () => {
         });
 
         if (project.image_url) {
-          console.log("Setting image preview:", project.image_url);
           setImagePreview(getImageUrl(project.image_url));
         }
 
@@ -178,7 +166,6 @@ const ProjectEditor: React.FC = () => {
 
       const API_URL =
         process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-      console.log("Making GET request to:", `${API_URL}/v1/projects/${id}`);
 
       const response = await axios.get(`${API_URL}/v1/projects/${id}`, {
         headers: {
@@ -189,8 +176,6 @@ const ProjectEditor: React.FC = () => {
         withCredentials: true,
       });
 
-      console.log("Project data received:", response.data);
-
       if (response.data) {
         const project = response.data;
         if (project.start_date) {
@@ -200,7 +185,6 @@ const ProjectEditor: React.FC = () => {
           project.end_date = project.end_date.split("T")[0];
         }
 
-        console.log("Setting form data with:", project);
         setFormData({
           ...project,
           beneficiaries: project.beneficiaries || "", // Ensure beneficiaries field is set
@@ -212,7 +196,6 @@ const ProjectEditor: React.FC = () => {
         });
 
         if (project.image_url) {
-          console.log("Setting image preview:", project.image_url);
           setImagePreview(getImageUrl(project.image_url));
         }
       } else {
@@ -290,7 +273,6 @@ const ProjectEditor: React.FC = () => {
 
     try {
       // Try to create using the project service first with extracted data (not FormData)
-      console.log("Creating project with projectService");
 
       // Use regular API call with FormData instead of projectService
       await post("/projects", formDataToSend, {
@@ -322,14 +304,11 @@ const ProjectEditor: React.FC = () => {
       keep_existing_image: !imageFile && !!imagePreview ? 1 : 0,
     };
 
-    console.log("Updating project with data:", jsonData);
-
     // Try direct axios approach first as it's often most reliable for Laravel backends
     try {
       const apiUrl =
         process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
       const endpoint = `${apiUrl}/projects/${id}`;
-      console.log("Making direct axios request to:", endpoint);
 
       // Get authentication token
       const token = localStorage.getItem("srdo_token");
@@ -343,7 +322,6 @@ const ProjectEditor: React.FC = () => {
         await axios.get(`${baseUrl}/sanctum/csrf-cookie`, {
           withCredentials: true,
         });
-        console.log("CSRF token fetched successfully");
       } catch (csrfError) {
         console.error("Failed to fetch CSRF token:", csrfError);
         // Continue anyway
@@ -397,7 +375,6 @@ const ProjectEditor: React.FC = () => {
         });
       }
 
-      console.log("Project updated successfully with direct axios:", response);
       return response.data;
     } catch (axiosError: any) {
       console.warn("Failed with direct axios approach:", axiosError);
@@ -412,7 +389,6 @@ const ProjectEditor: React.FC = () => {
 
     // Try useApi hook as a fallback
     try {
-      console.log("Trying useApi hook for update...");
       const formDataToSend = new FormData();
 
       // Add each field explicitly to FormData
@@ -444,7 +420,7 @@ const ProjectEditor: React.FC = () => {
 
       // Use post with _method=PUT for more reliable Laravel handling
       const response = await post(`/projects/${id}`, formDataToSend, config);
-      console.log("Project updated successfully with useApi hook:", response);
+
       return response;
     } catch (useApiError: any) {
       console.error("All update methods failed");

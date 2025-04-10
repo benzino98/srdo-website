@@ -33,13 +33,10 @@ const ResourceForm: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [reloginAttempted, setReloginAttempted] = useState(false);
   const [categories] = useState<string[]>([
-    "document",
-    "report",
-    "form",
-    "guide",
-    "presentation",
-    "data",
-    "research",
+    "toolkits",
+    "reports",
+    "guides",
+    "publications",
   ]);
 
   // Function to attempt refreshing the authentication session

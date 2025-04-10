@@ -35,8 +35,6 @@ const CommentManagement: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("Starting to fetch pending comments...");
-      console.log("Authentication status:", isAuthenticated);
 
       if (!isAuthenticated) {
         console.error("Not authenticated");
@@ -46,41 +44,32 @@ const CommentManagement: React.FC = () => {
       }
 
       const token = localStorage.getItem("srdo_token");
-      console.log("Auth token present:", !!token);
-
-      console.log("Making API request to /comments?approved=0");
 
       try {
         // Get the raw response first
         const response = await get("/comments?approved=0");
-        console.log("Raw API response:", response);
 
         // Handle the response more carefully
         let commentsData: Comment[] = [];
 
         // Check if we got an array directly
         if (Array.isArray(response)) {
-          console.log("Response is a direct array");
           commentsData = response;
         }
         // Check if we have a nested data property that's an array
         else if (response?.data && Array.isArray(response.data)) {
-          console.log("Response has data array");
           commentsData = response.data;
         }
         // Check if we have a doubly nested data.data that's an array
         else if (response?.data?.data && Array.isArray(response.data.data)) {
-          console.log("Response has data.data array");
           commentsData = response.data.data;
         }
         // Handle other potential response formats
         else if (response && typeof response === "object") {
-          console.log("Searching for array properties in response");
           // Try to find any array in the response using type-safe approach
           const responseObj = response as Record<string, any>;
           for (const key in responseObj) {
             if (Array.isArray(responseObj[key])) {
-              console.log(`Found array in response.${key}`);
               commentsData = responseObj[key];
               break;
             }
@@ -89,7 +78,6 @@ const CommentManagement: React.FC = () => {
               const nestedObj = responseObj[key] as Record<string, any>;
               for (const nestedKey in nestedObj) {
                 if (Array.isArray(nestedObj[nestedKey])) {
-                  console.log(`Found array in response.${key}.${nestedKey}`);
                   commentsData = nestedObj[nestedKey];
                   break;
                 }
@@ -100,10 +88,6 @@ const CommentManagement: React.FC = () => {
 
         // Last resort - use a direct axios call
         if (commentsData.length === 0) {
-          console.log(
-            "No comments found in API response, trying direct axios call"
-          );
-
           // Get the base URL
           const baseUrl =
             process.env.REACT_APP_API_URL || "http://localhost:8000/api";
@@ -120,10 +104,8 @@ const CommentManagement: React.FC = () => {
 
           // Make a direct GET request
           const fullUrl = `${baseUrl}/comments?approved=0`;
-          console.log("Sending direct GET request to:", fullUrl);
 
           const axiosResponse = await axiosInstance.get(fullUrl);
-          console.log("Direct axios response:", axiosResponse);
 
           if (axiosResponse.status === 200 && axiosResponse.data) {
             // Try to find comments in the response
@@ -139,17 +121,12 @@ const CommentManagement: React.FC = () => {
         }
 
         // Log what we found
-        console.log("Processed comments data:", commentsData);
-        console.log(`Found ${commentsData.length} pending comments`);
 
         // Update state with the comments
         setComments(commentsData);
 
         // If we still didn't find any comments, check if that's expected
         if (commentsData.length === 0) {
-          console.log(
-            "No pending comments found - this could be correct if there are none pending"
-          );
         }
       } catch (apiError) {
         console.error("API request failed:", apiError);
@@ -186,8 +163,6 @@ const CommentManagement: React.FC = () => {
 
       // Using direct axios call instead of useApi hook
       try {
-        console.log(`Approving comment with ID: ${id}`);
-
         // Get auth token
         const token = localStorage.getItem("srdo_token");
         if (!token) {
@@ -211,13 +186,10 @@ const CommentManagement: React.FC = () => {
 
         // Make the PUT request
         const fullUrl = `${baseUrl}/comments/${id}/approve`;
-        console.log("Sending direct PUT request to:", fullUrl);
 
         const response = await axiosInstance.put(fullUrl);
-        console.log("Direct axios response:", response);
 
         if (response.status >= 200 && response.status < 300) {
-          console.log("Comment approved successfully");
           setSuccessMessage("Comment approved successfully");
 
           // Remove the comment from the list
@@ -258,8 +230,6 @@ const CommentManagement: React.FC = () => {
 
       // Using direct axios call instead of useApi hook
       try {
-        console.log(`Deleting comment with ID: ${id}`);
-
         // Get auth token
         const token = localStorage.getItem("srdo_token");
         if (!token) {
@@ -283,13 +253,10 @@ const CommentManagement: React.FC = () => {
 
         // Make the DELETE request
         const fullUrl = `${baseUrl}/comments/${id}`;
-        console.log("Sending direct DELETE request to:", fullUrl);
 
         const response = await axiosInstance.delete(fullUrl);
-        console.log("Direct axios response:", response);
 
         if (response.status >= 200 && response.status < 300) {
-          console.log("Comment deleted successfully");
           setSuccessMessage("Comment deleted successfully");
 
           // Remove the comment from the list

@@ -50,14 +50,6 @@ export function useApi<T>() {
         }
 
         // Additional debugging for projects endpoint
-        if (endpoint.includes("/projects/")) {
-          console.log(`[useApi Debug] API Response for project:`, {
-            status: response.status,
-            statusText: response.statusText,
-            dataType: typeof response.data,
-            data: response.data,
-          });
-        }
 
         // Handle the API response properly for different formats
         let apiResponse: ApiResponse<T>;
