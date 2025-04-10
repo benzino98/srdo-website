@@ -16,7 +16,6 @@ const NewsPage: React.FC = () => {
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-800 relative inline-block">
             Latest News
-            <div className="absolute bottom-0 left-1/2 w-16 h-1 bg-green-600 transform -translate-x-1/2 mt-2"></div>
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
             Stay updated with the latest news, projects, and events from SRDO
