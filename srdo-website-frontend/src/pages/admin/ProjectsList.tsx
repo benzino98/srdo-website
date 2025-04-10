@@ -91,7 +91,15 @@ const ProjectsList: React.FC = () => {
       const offlineProjects = JSON.parse(
         localStorage.getItem("offline_projects") || "[]"
       );
-      setProjects(offlineProjects);
+
+      // Sort offline projects by creation date (newest first)
+      const sortedProjects = [...offlineProjects].sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA; // Descending order
+      });
+
+      setProjects(sortedProjects);
       setLoading(false);
     } catch (error) {
       console.error("Error loading offline projects:", error);
@@ -114,6 +122,8 @@ const ProjectsList: React.FC = () => {
       const params: any = {
         per_page: perPage,
         page: currentPage,
+        sort: "created_at",
+        order: "desc",
       };
 
       // Add search term to params if it exists
@@ -143,6 +153,15 @@ const ProjectsList: React.FC = () => {
         } else {
           setProjects([]);
         }
+
+        // Sort projects by creation date (newest first) regardless of API response order
+        setProjects((prev) =>
+          [...prev].sort((a, b) => {
+            const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return dateB - dateA; // Descending order
+          })
+        );
 
         // Set pagination data using type assertion to avoid TypeScript errors
         const responseAny = response as any;

@@ -22,11 +22,41 @@ class ProjectController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Order by start date (newest first)
-        $query->orderBy('start_date', 'desc');
+        // Search functionality if search parameter is provided
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        // Handle sorting parameters
+        $sortField = $request->input('sort', 'created_at');
+        $sortOrder = $request->input('order', 'desc');
+
+        // Only allow valid sort fields to prevent SQL injection
+        $allowedSortFields = ['created_at', 'updated_at', 'start_date', 'end_date', 'title'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'created_at'; // Default to created_at if invalid field requested
+        }
+
+        // Only allow valid sort orders
+        if (!in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $sortOrder = 'desc'; // Default to descending if invalid order requested
+        }
+
+        // Apply sorting
+        $query->orderBy($sortField, $sortOrder);
 
         // Pagination
         $perPage = $request->per_page ?? 12;
+        
+        // Make sure per_page is reasonable
+        if ($perPage <= 0 || $perPage > 100) {
+            $perPage = 12;
+        }
         
         $projects = $query->paginate($perPage);
         
