@@ -40,7 +40,6 @@ const LoginPage: React.FC = () => {
 
       navigate(from, { replace: true });
     } catch (err: any) {
-      console.error("Login error:", err);
       setError(
         err instanceof Error
           ? err.message
@@ -141,21 +140,6 @@ const LoginPage: React.FC = () => {
                 {isLoading ? "Signing in..." : "Sign in"}
               </button>
             </div>
-
-            {/* Debugging information - only in development */}
-            {process.env.NODE_ENV !== "production" && (
-              <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-                <div>
-                  <strong>Debug Info:</strong>
-                </div>
-                <div>API URL: {process.env.REACT_APP_API_URL || "Not set"}</div>
-                <div>Login Attempts: {loginAttempts}</div>
-                <div>
-                  Token exists:{" "}
-                  {localStorage.getItem("srdo_token") ? "Yes" : "No"}
-                </div>
-              </div>
-            )}
           </form>
         </div>
       </div>
