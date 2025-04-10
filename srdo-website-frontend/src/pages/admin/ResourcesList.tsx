@@ -296,11 +296,23 @@ const ResourcesList: React.FC = () => {
   };
 
   const formatFileSize = (bytes: number) => {
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
     if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
+  };
+
+  // Format date to readable format
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const getFileTypeIcon = (fileType: string) => {
@@ -463,6 +475,12 @@ const ResourcesList: React.FC = () => {
                 </th>
                 <th
                   scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Timestamps
+                </th>
+                <th
+                  scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   Actions
@@ -497,6 +515,18 @@ const ResourcesList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {resource.download_count || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex flex-col">
+                      <span>
+                        <strong>Created:</strong>{" "}
+                        {formatDate(resource.created_at)}
+                      </span>
+                      <span className="mt-1">
+                        <strong>Updated:</strong>{" "}
+                        {formatDate(resource.updated_at)}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link

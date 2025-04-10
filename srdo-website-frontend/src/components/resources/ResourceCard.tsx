@@ -10,6 +10,8 @@ interface ResourceCardProps {
   downloadCount: number;
   onDownload: () => void;
   isDownloading?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const ResourceCard: React.FC<ResourceCardProps> = ({
@@ -22,6 +24,8 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
   downloadCount,
   onDownload,
   isDownloading = false,
+  createdAt,
+  updatedAt,
 }) => {
   // Format large numbers with commas
   const formatNumber = (num: number): string => {
@@ -39,6 +43,19 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     const size = (bytes / Math.pow(1024, i)).toFixed(2);
     return `${size} ${sizes[i]}`;
+  };
+
+  // Format date to readable format
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -105,14 +122,22 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
             </button>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500 flex items-center justify-between">
-          <span>{category}</span>
-          <div className="flex items-center space-x-2">
-            <span>•</span>
-            <span className="ml-2">
-              {formatNumber(downloadCount || 0)} downloads
-            </span>
+        <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+          <div className="flex items-center justify-between mb-2">
+            <span>{category}</span>
+            <div className="flex items-center space-x-2">
+              <span>•</span>
+              <span className="ml-2">
+                {formatNumber(downloadCount || 0)} downloads
+              </span>
+            </div>
           </div>
+          {(createdAt || updatedAt) && (
+            <div className="flex flex-col mt-2 text-gray-400">
+              {createdAt && <span>Published: {formatDate(createdAt)}</span>}
+              {updatedAt && <span>Last updated: {formatDate(updatedAt)}</span>}
+            </div>
+          )}
         </div>
       </div>
     </div>

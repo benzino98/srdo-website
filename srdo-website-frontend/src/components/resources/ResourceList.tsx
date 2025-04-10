@@ -320,6 +320,8 @@ const ResourceList: React.FC<ResourceListProps> = ({
             downloadCount={resource.download_count || 0}
             onDownload={() => handleDownload(resource)}
             isDownloading={downloadingResourceId === resource.id}
+            createdAt={resource.created_at}
+            updatedAt={resource.updated_at}
           />
         ))}
       </div>
