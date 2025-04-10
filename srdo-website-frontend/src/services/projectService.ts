@@ -46,16 +46,11 @@ const projectService = {
    * Create a new project
    */
   createProject: async (projectData: Partial<Project>) => {
-    console.log("Creating project with data:", projectData);
-    console.log("API Base URL:", process.env.REACT_APP_API_URL);
-
     try {
-      console.log("Making POST request to /projects");
       const response = await api.post<ApiResponse<Project>>(
         "/projects",
         projectData
       );
-      console.log("Project creation successful:", response.data);
       return response.data;
     } catch (error: any) {
       console.error("Project creation failed:", {
@@ -75,10 +70,8 @@ const projectService = {
    * Get a list of projects
    */
   getProjects: async () => {
-    console.log("Fetching all projects");
     try {
       const response = await api.get<ApiResponse<Project[]>>("/projects");
-      console.log("Projects fetched successfully:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -92,13 +85,11 @@ const projectService = {
   getProjectsPaginated: async (
     filters: ProjectFilters = {}
   ): Promise<PaginatedApiResponse<Project[]>> => {
-    console.log("Fetching paginated projects with filters:", filters);
     try {
       const response = await api.get<PaginatedApiResponse<Project[]>>(
         "/projects",
         { params: filters }
       );
-      console.log("Paginated projects fetched successfully:", response);
       return response;
     } catch (error) {
       console.error("Error fetching paginated projects:", error);
@@ -110,10 +101,8 @@ const projectService = {
    * Get a single project by ID
    */
   getProject: async (id: number | string): Promise<Project> => {
-    console.log(`Fetching project with ID: ${id}`);
     try {
       const response = await api.get<ApiResponse<Project>>(`/projects/${id}`);
-      console.log("Project fetched successfully:", response.data);
       return response.data;
     } catch (error) {
       console.error(`Error fetching project with ID ${id}:`, error);
@@ -125,10 +114,8 @@ const projectService = {
    * Delete a project by ID
    */
   deleteProject: async (id: number | string) => {
-    console.log(`Deleting project with ID: ${id}`);
     try {
       const response = await api.delete<any>(`/projects/${id}`);
-      console.log("Project deleted successfully:", response.data);
       return response.data;
     } catch (error) {
       console.error(`Error deleting project with ID ${id}:`, error);
@@ -140,7 +127,6 @@ const projectService = {
    * Update a project using FormData (for file uploads)
    */
   updateProject: async (id: number | string, formData: FormData) => {
-    console.log(`Updating project with ID: ${id} using FormData`);
     try {
       const response = await api.post<ApiResponse<Project>>(
         `/projects/${id}?_method=PUT`,
@@ -151,7 +137,6 @@ const projectService = {
           },
         }
       );
-      console.log("Project updated successfully with FormData:", response.data);
       return response.data;
     } catch (error) {
       console.error(
@@ -166,7 +151,6 @@ const projectService = {
    * Update a project using JSON data (more reliable for non-file fields)
    */
   updateProjectJson: async (id: number | string, data: any) => {
-    console.log(`Updating project with ID: ${id} using JSON data:`, data);
     try {
       const response = await api.put<ApiResponse<Project>>(
         `/projects/${id}`,
@@ -179,7 +163,6 @@ const projectService = {
           },
         }
       );
-      console.log("Project updated successfully with JSON:", response.data);
       return response.data;
     } catch (error) {
       console.error(`Error updating project with ID ${id} using JSON:`, error);

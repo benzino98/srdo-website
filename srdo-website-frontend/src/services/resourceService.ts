@@ -29,11 +29,6 @@ const resourceService = {
    * Get a paginated list of resources
    */
   getResources: async (filters: ResourceFilters = {}) => {
-    console.log(
-      "resourceService.getResources: Starting request with params:",
-      filters
-    );
-
     try {
       let url = `/resources?page=${filters.page || 1}`;
 
@@ -45,15 +40,9 @@ const resourceService = {
         url += `&search=${encodeURIComponent(filters.search)}`;
       }
 
-      console.log("resourceService.getResources: Making request to URL:", url);
-
       const response = await api.get<ApiResponse<Resource[]>>("/resources", {
         params: filters,
       });
-      console.log(
-        "resourceService.getResources: Received response:",
-        response.data
-      );
 
       return response.data;
     } catch (error) {
@@ -72,13 +61,8 @@ const resourceService = {
    */
   downloadResource: async (id: number | string): Promise<void> => {
     try {
-      console.log(`Starting download for resource with ID: ${id}`);
-
       // Get the resource metadata first to check if it exists
       const metadata = await api.get<Resource>(`/resources/${id}`);
-      console.log(
-        `Resource metadata fetched: ${metadata?.title || "Unknown resource"}`
-      );
 
       // Create a download token
       interface DownloadTokenResponse {
@@ -94,12 +78,6 @@ const resourceService = {
           {
             clientTimestamp: new Date().toISOString(),
           }
-        );
-
-        console.log(
-          `Download token created: ${
-            tokenResponse?.token ? "Success" : "Failed"
-          }`
         );
 
         if (tokenResponse?.downloadUrl) {
@@ -128,8 +106,6 @@ const resourceService = {
       const baseURL = apiInstance.defaults.baseURL || "";
       const downloadUrl = `${baseURL}/resources/${id}/download`;
 
-      console.log(`Attempting direct download from: ${downloadUrl}`);
-
       // Create a hidden iframe for download to avoid blocking
       const iframe = document.createElement("iframe");
       iframe.style.display = "none";
@@ -142,8 +118,6 @@ const resourceService = {
           document.body.removeChild(iframe);
         }
       }, 5000);
-
-      console.log(`Download initiated via fallback method`);
     } catch (error) {
       console.error(`Error downloading resource with ID ${id}:`, error);
       throw error;

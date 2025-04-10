@@ -37,31 +37,13 @@ const testUrls = [
 ];
 
 // Run tests
-console.log("Testing Image URL Construction:");
-console.log(
-  "API URL:",
-  process.env.REACT_APP_API_URL || "http://localhost:8000/api"
-);
-
 testUrls.forEach((url) => {
-  console.log(`\nOriginal: ${url}`);
-  console.log(`Processed: ${getImageUrl(url)}`);
-
   // Test with localhost fetch (Node.js only)
   if (typeof fetch === "function") {
-    fetch(getImageUrl(url), { method: "HEAD" })
-      .then((response) => {
-        console.log(
-          `Status: ${response.status} ${response.ok ? "OK" : "Failed"}`
-        );
-      })
-      .catch((error) => {
-        console.log(`Error: ${error.message}`);
-      });
+    fetch(getImageUrl(url), { method: "HEAD" });
   }
 });
 
 // Test direct access to storage
 const directUrl =
   "http://localhost:8000/storage/news/test-2025-03-24-192422.jpg";
-console.log(`\nDirect URL test: ${directUrl}`);

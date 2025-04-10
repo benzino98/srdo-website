@@ -82,7 +82,7 @@ const formatCurrency = (amount: number | null): string => {
     // This ensures consistent display of the Naira symbol
     return formattedAmount.replace("NGN", "₦").replace("₦ ", "₦");
   } catch (error) {
-    console.error("Error formatting currency:", error);
+    // Silently fall back to a basic formatting approach
     return `₦${amount.toLocaleString()}`;
   }
 };
@@ -103,44 +103,26 @@ const ProjectDetail: React.FC = () => {
 
       try {
         if (id) {
-          console.log(`Attempting to fetch project with ID: ${id}`);
-
           // Use the enhanced projectApi.getProjectDetail method
           const response = await projectApi.getProjectDetail(id);
-          console.log("Project API response:", response);
-
-          // Check the full response structure
-          console.log("Full response object:", response);
 
           // Check if the data is nested differently
           let projectData;
           if (response.data && response.data.data) {
             // Handle case where data is nested one level deeper
             projectData = response.data.data;
-            console.log(
-              "Found project data in response.data.data:",
-              projectData
-            );
           } else if (response.data) {
             // Handle standard structure
             projectData = response.data;
-            console.log("Found project data in response.data:", projectData);
           } else {
-            console.error("No project data in response", response);
             throw new Error("No project data received from API");
           }
 
-          // Log the content specifically to check if it exists
-          console.log("Project content:", projectData.content);
-          console.log("Project description:", projectData.description);
-
           setProject(projectData);
         } else {
-          console.error("No project ID provided");
           throw new Error("Missing project ID");
         }
       } catch (err) {
-        console.error("Failed to load project:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setLoading(false);

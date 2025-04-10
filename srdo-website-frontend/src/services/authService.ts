@@ -25,14 +25,12 @@ export interface AuthError extends Error {
 class AuthService {
   private setAuthHeader(token: string | null) {
     if (token) {
-      console.log("Setting auth token in headers");
       // Import apiService correctly to avoid circular dependencies
       import("./api").then((apiModule) => {
         const api = apiModule.default.getInstance();
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       });
     } else {
-      console.log("Removing auth token from headers");
       // Import apiService correctly to avoid circular dependencies
       import("./api").then((apiModule) => {
         const api = apiModule.default.getInstance();
@@ -70,8 +68,6 @@ class AuthService {
 
   async login(credentials: LoginCredentials): Promise<User> {
     try {
-      console.log("Attempting login with:", credentials.email);
-
       const response = await apiService.post<ApiResponse<LoginResponse>>(
         "/auth/login",
         credentials
@@ -91,7 +87,6 @@ class AuthService {
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       this.setAuthHeader(token);
-      console.log("Login successful, stored token and user");
 
       return user;
     } catch (error: any) {
@@ -112,7 +107,6 @@ class AuthService {
       // Attempt to call logout endpoint if it exists
       await apiService.post("/auth/logout").catch(() => {
         // Silently fail if the endpoint doesn't exist or fails
-        console.log("Logout endpoint not available or failed");
       });
     } finally {
       // Always clear local storage and headers
@@ -138,14 +132,10 @@ class AuthService {
 
   async refreshToken(): Promise<boolean> {
     if (this.isRefreshing) {
-      console.log(
-        "Token refresh already in progress, skipping duplicate request"
-      );
       return false;
     }
 
     this.isRefreshing = true;
-    console.log("Starting token refresh operation");
 
     try {
       const API_URL =
@@ -174,7 +164,6 @@ class AuthService {
 
       if (response.data && response.data.token) {
         localStorage.setItem(TOKEN_KEY, response.data.token);
-        console.log("Token refreshed successfully");
         this.isRefreshing = false;
         return true;
       }
@@ -208,7 +197,6 @@ class AuthService {
 
         if (fallbackResponse.data && fallbackResponse.data.token) {
           localStorage.setItem(TOKEN_KEY, fallbackResponse.data.token);
-          console.log("AUTH SERVICE: Token refreshed via fallback method");
           this.isRefreshing = false;
           return true;
         }

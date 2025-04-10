@@ -135,15 +135,12 @@ const newsService = {
    */
   getArticleBySlug: async (slug: string): Promise<ApiResponse<NewsArticle>> => {
     try {
-      console.log(`Making API request to fetch article with slug: ${slug}`);
       const apiUrl =
         process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-      console.log(`Full URL will be: ${apiUrl}/news/slug/${slug}`);
 
       const response = await api.get<ApiResponse<NewsArticle>>(
         `/news/slug/${slug}`
       );
-      console.log("Article response:", response);
 
       // Transform the response to match expected NewsArticle type if needed
       if (response && response.data) {
@@ -180,7 +177,6 @@ const newsService = {
     data: any
   ): Promise<ApiResponse<NewsArticle>> => {
     try {
-      console.log("Updating article with JSON data:", { id, ...data });
       return await api.put<ApiResponse<NewsArticle>>(`/news/${id}`, data, {
         headers: {
           "Content-Type": "application/json",

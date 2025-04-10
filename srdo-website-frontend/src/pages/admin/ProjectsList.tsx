@@ -75,11 +75,9 @@ const ProjectsList: React.FC = () => {
       process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
     try {
-      console.log("Checking server status...");
       const response = await axios.get(`${API_URL}/ping`, {
         timeout: 5000,
       });
-      console.log("Server is online:", response.data);
       setIsOfflineMode(false);
     } catch (error) {
       console.error("Server check failed:", error);
@@ -112,7 +110,6 @@ const ProjectsList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("Fetching projects...");
 
       const params: any = {
         per_page: perPage,
@@ -125,7 +122,6 @@ const ProjectsList: React.FC = () => {
       }
 
       const response = await get("/projects", { params });
-      console.log("Projects response:", response);
 
       if (response && response.data) {
         if (Array.isArray(response.data)) {
@@ -196,11 +192,9 @@ const ProjectsList: React.FC = () => {
       try {
         setDeleteInProgress(true);
         setError(null);
-        console.log(`Attempting to delete project with ID: ${id}`);
 
         // Use projectService instead of direct API call
         await projectService.deleteProject(id);
-        console.log("Project deleted successfully");
 
         // Filter out the deleted project from state
         setProjects(projects.filter((project) => project.id !== id));
@@ -429,10 +423,6 @@ const ProjectsList: React.FC = () => {
                           src={getImageUrl(project.image_url, project.title)}
                           alt={project.title}
                           onError={(e) => {
-                            console.log(
-                              "Image failed to load:",
-                              project.image_url
-                            );
                             e.currentTarget.src =
                               "/images/projects/placeholder.jpg";
                           }}

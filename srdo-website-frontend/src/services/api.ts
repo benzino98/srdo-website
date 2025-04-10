@@ -51,8 +51,6 @@ const getCsrfToken = async () => {
   try {
     // Strip both /api and /v1 from the URL to get the base URL
     const baseUrl = API_URL.replace(/\/api\/v1$/, "").replace(/\/api$/, "");
-    console.log("Fetching CSRF token from:", `${baseUrl}/sanctum/csrf-cookie`);
-
     await axios.get(`${baseUrl}/sanctum/csrf-cookie`, {
       withCredentials: true,
       headers: {
@@ -60,8 +58,6 @@ const getCsrfToken = async () => {
         "X-Requested-With": "XMLHttpRequest",
       },
     });
-
-    console.log("CSRF token fetched successfully");
   } catch (error) {
     console.error("Error fetching CSRF token:", error);
     throw error;
@@ -78,24 +74,10 @@ api.interceptors.request.use(
       await getCsrfToken();
     }
 
-    console.log("Request Interceptor - Original Config:", {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      headers: config.headers,
-      data: config.data,
-    });
-
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       // Ensure Authorization header is properly set with Bearer token
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("Added auth token to request. Full URL will be:", {
-        baseURL: config.baseURL,
-        url: config.url,
-        fullURL: `${config.baseURL}${config.url}`,
-        auth_header: `Bearer ${token.substring(0, 10)}...`, // Only log part of the token for security
-      });
     } else {
       console.warn(
         "No auth token found for request. Authentication might fail."
@@ -105,15 +87,7 @@ api.interceptors.request.use(
     // Don't set Content-Type for FormData
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
-      console.log("FormData detected, removed Content-Type header");
     }
-
-    console.log("Final Request Config:", {
-      url: `${config.baseURL}${config.url}`,
-      method: config.method,
-      headers: config.headers,
-      withCredentials: config.withCredentials,
-    });
 
     return config;
   },
@@ -141,11 +115,6 @@ api.interceptors.response.use(
         contentType.includes("application/vnd.openxmlformats") ||
         response.config.responseType === "blob")
     ) {
-      console.log(
-        `Binary response detected: ${contentType}, size: ${
-          response.data?.size || "unknown"
-        } bytes`
-      );
       return response;
     }
 
@@ -169,19 +138,6 @@ api.interceptors.response.use(
 // Response interceptor for handling common errors
 api.interceptors.response.use(
   (response) => {
-    console.log("Response Interceptor - Success:", {
-      status: response.status,
-      url: response.config.url,
-      method: response.config.method,
-      headers: response.headers,
-    });
-
-    // Only log response data if it's not a binary stream
-    if (response.config.responseType !== "blob") {
-      console.log("Response Data:", response.data);
-    } else {
-      console.log("Binary response received");
-    }
     return response;
   },
   async (error) => {
@@ -229,9 +185,6 @@ api.interceptors.response.use(
       // For public endpoints, we'll allow the request to continue even with 401 error
       // This helps with displaying resources even when authentication fails
       if (isPublicEndpoint && !originalRequest.url?.includes("/admin")) {
-        console.log(
-          "Public endpoint detected, continuing with request despite auth error"
-        );
         // For read-only endpoints, allow continuing without authentication
         if (originalRequest.method?.toLowerCase() === "get") {
           // Just return a modified response that won't trigger further auth issues
@@ -257,8 +210,6 @@ api.interceptors.response.use(
           isRefreshing = true;
 
           try {
-            console.log("Attempting to refresh the token...");
-
             // Import and use the authService here to avoid circular dependencies
             const authService = await import("./authService").then(
               (module) => module.default
@@ -269,7 +220,6 @@ api.interceptors.response.use(
 
             try {
               // Try with our custom public endpoint first
-              console.log("Calling public refresh endpoint");
               const refreshResponse = await axios.post(
                 `${API_URL}/auth/refresh-public`,
                 { token: currentToken },
@@ -287,7 +237,6 @@ api.interceptors.response.use(
               if (refreshResponse.data?.token) {
                 // Store the new token
                 localStorage.setItem(TOKEN_KEY, refreshResponse.data.token);
-                console.log("Token refreshed via public endpoint");
 
                 // Notify all subscribers
                 onTokenRefreshed(refreshResponse.data.token);
@@ -311,8 +260,6 @@ api.interceptors.response.use(
               const refreshSuccess = await authService.refreshToken();
 
               if (refreshSuccess) {
-                console.log("Token refreshed successfully via standard method");
-
                 // Get the new token
                 const newToken = localStorage.getItem(TOKEN_KEY);
 
@@ -396,25 +343,14 @@ export const projectApi = {
     projectId: string | number,
     config?: AxiosRequestConfig
   ) => {
-    console.log(`[Project API] Fetching project details for ID: ${projectId}`);
-
     // Try with v1 prefix first
     try {
-      console.log(
-        `[Project API] Trying with v1 prefix: /v1/projects/${projectId}`
-      );
       const response = await api.get(`/v1/projects/${projectId}`, config);
-      console.log("[Project API] Request with v1 prefix succeeded");
       return response;
     } catch (err) {
-      console.log(
-        "[Project API] Request with v1 prefix failed, trying without prefix"
-      );
-
       // Try without v1 prefix as fallback
       try {
         const response = await api.get(`/projects/${projectId}`, config);
-        console.log("[Project API] Request without v1 prefix succeeded");
         return response;
       } catch (secondErr) {
         console.error("[Project API] Both request attempts failed");

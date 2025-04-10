@@ -91,12 +91,6 @@ const ResourcesList: React.FC = () => {
       const pageNumber =
         pageToFetch !== undefined ? pageToFetch : latestPageRef.current;
 
-      console.log(
-        "Fetching resources for page:",
-        pageNumber,
-        "Latest page ref:",
-        latestPageRef.current
-      );
       setLoading(true);
       setError(null);
 
@@ -115,8 +109,6 @@ const ResourcesList: React.FC = () => {
         queryParams.search = debouncedSearchTerm;
       }
 
-      console.log("Sending request with params:", queryParams);
-
       // For page 1, always fetch from API
       // For pages > 1, check if we have all resources cached first
       if (
@@ -132,38 +124,24 @@ const ResourcesList: React.FC = () => {
           },
         });
 
-        console.log("API Response:", response);
-
         if (response) {
           let fetchedResources: Resource[] = [];
 
-          // Debug the full response structure
-          console.log(
-            "Full API response structure:",
-            JSON.stringify(response, null, 2)
-          );
-
           if (Array.isArray(response)) {
-            console.log("Response is an array");
             fetchedResources = response;
           } else if (response.data && Array.isArray(response.data)) {
-            console.log("Response has data array");
             fetchedResources = response.data;
           } else if (response.data?.data && Array.isArray(response.data.data)) {
-            console.log("Response has nested data array");
             fetchedResources = response.data.data;
           } else if (typeof response === "object") {
-            console.log("Response is an object, looking for arrays");
             // First check if response itself has data property
             if (
               response.data &&
               typeof response.data === "object" &&
               !Array.isArray(response.data)
             ) {
-              console.log("Checking response.data object for resources");
               for (const key in response.data) {
                 if (Array.isArray(response.data[key])) {
-                  console.log(`Found array in response.data.${key}`);
                   fetchedResources = response.data[key];
                   break;
                 }
@@ -177,13 +155,10 @@ const ResourcesList: React.FC = () => {
               );
 
               if (possibleArrays.length > 0) {
-                console.log(`Found array in response.${possibleArrays[0][0]}`);
                 fetchedResources = possibleArrays[0][1];
               }
             }
           }
-
-          console.log("Extracted all resources:", fetchedResources);
 
           // Store all resources in our cache
           setAllResourcesCache(fetchedResources);
@@ -191,9 +166,6 @@ const ResourcesList: React.FC = () => {
           // Calculate total pages based on the full resource count
           const totalCount = fetchedResources.length;
           const calculatedTotalPages = Math.ceil(totalCount / perPage);
-          console.log(
-            `Total resources: ${totalCount}, Total pages: ${calculatedTotalPages}`
-          );
 
           setTotalPages(calculatedTotalPages > 0 ? calculatedTotalPages : 1);
           setTotalItems(totalCount);
@@ -207,7 +179,6 @@ const ResourcesList: React.FC = () => {
         }
       } else {
         // We already have resources cached, just paginate on client side
-        console.log("Using cached resources for pagination");
         handleClientPagination(allResourcesCache, pageNumber);
       }
 
@@ -231,28 +202,16 @@ const ResourcesList: React.FC = () => {
     const startIndex = (pageNumber - 1) * perPage;
     const totalItems = allResources.length;
 
-    console.log(
-      `Paginating resources: ${totalItems} total, page ${pageNumber}, start index ${startIndex}`
-    );
-
     // Make sure we don't go past the end of the array
     if (startIndex < allResources.length) {
       const paginatedResources = allResources.slice(
         startIndex,
         Math.min(startIndex + perPage, allResources.length)
       );
-      console.log(
-        `Showing resources ${startIndex + 1}-${
-          startIndex + paginatedResources.length
-        } of ${allResources.length}`
-      );
       setResources(paginatedResources);
     } else if (allResources.length > 0) {
       // If somehow the start index is beyond the array length, go to last page
       const lastPageNumber = Math.ceil(allResources.length / perPage);
-      console.log(
-        `Start index out of bounds, going to last page: ${lastPageNumber}`
-      );
 
       const lastPageStartIndex = (lastPageNumber - 1) * perPage;
       setCurrentPage(lastPageNumber);
@@ -265,7 +224,6 @@ const ResourcesList: React.FC = () => {
       setResources(lastPageResources);
     } else {
       // No resources at all
-      console.log("No resources available");
       setResources([]);
     }
   };
@@ -312,7 +270,6 @@ const ResourcesList: React.FC = () => {
 
   // Handle page change
   const handlePageChange = (page: number) => {
-    console.log(`Changing to page ${page}`);
     latestPageRef.current = page;
     setCurrentPage(page);
     // Already handled by the useEffect dependency on currentPage
@@ -475,7 +432,6 @@ const ResourcesList: React.FC = () => {
       ) : (
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           {(() => {
-            console.log("Rendering resources:", resources);
             return null;
           })()}
           <table className="min-w-full divide-y divide-gray-200">
@@ -602,12 +558,7 @@ const ResourcesList: React.FC = () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => {
-                      console.log(
-                        "Previous button clicked. Current page:",
-                        currentPage
-                      );
                       const prevPage = Math.max(1, currentPage - 1);
-                      console.log("Going to previous page:", prevPage);
                       handlePageChange(prevPage);
                     }}
                     disabled={currentPage === 1}
@@ -621,14 +572,7 @@ const ResourcesList: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
-                      console.log(
-                        "Next button clicked. Current page:",
-                        currentPage,
-                        "Total pages:",
-                        totalPages
-                      );
                       const nextPage = Math.min(totalPages, currentPage + 1);
-                      console.log("Going to next page:", nextPage);
                       handlePageChange(nextPage);
                     }}
                     disabled={currentPage === totalPages}
