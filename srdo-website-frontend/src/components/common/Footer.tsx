@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
             <div className="space-y-4">
               <div className="flex space-x-6">
                 <a
-                  href="#"
+                  href="https://www.facebook.com/share/19PsH7iJRv/"
                   className="text-gray-400 hover:text-gray-300"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -127,7 +127,7 @@ const Footer: React.FC = () => {
                   <FacebookIcon />
                 </a>
                 <a
-                  href="#"
+                  href="https://www.instagram.com/plateau_state_srdo/"
                   className="text-gray-400 hover:text-gray-300"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -136,7 +136,7 @@ const Footer: React.FC = () => {
                   <InstagramIcon />
                 </a>
                 <a
-                  href="#"
+                  href="https://x.com/PSrdo12577"
                   className="text-gray-400 hover:text-gray-300"
                   target="_blank"
                   rel="noopener noreferrer"

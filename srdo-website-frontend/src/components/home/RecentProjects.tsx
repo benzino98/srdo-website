@@ -112,11 +112,9 @@ const RecentProjects: React.FC = () => {
         if (projectData.length > 0) {
           setProjects(projectData);
         } else {
-          console.warn("No projects found in response:", response);
           throw new Error("No projects found");
         }
       } catch (err) {
-        console.error("Failed to fetch projects:", err);
         setError("Failed to load recent projects");
         setProjects([]);
       } finally {

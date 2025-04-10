@@ -246,19 +246,16 @@ const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {
           // Store all news articles in cache for client-side pagination
           setAllNewsCache(newsData);
         } else {
-          console.error("No valid news data found in response:", result);
           setNews([]);
           setData(null);
           setError("No news articles found");
         }
       } else {
-        console.error("Unexpected API response:", result);
         setData(null);
         setNews([]);
         setError("Failed to retrieve news data from the server");
       }
     } catch (err: any) {
-      console.error("Error loading news:", err);
       setError(err.message || "Failed to load news");
       setData(null);
       setNews([]);
