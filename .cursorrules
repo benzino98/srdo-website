@@ -1,0 +1,71 @@
+# SRDO Website - Project Intelligence
+
+## Naming Conventions
+
+- Use `camelCase` for variables and functions with descriptive names
+- Use `PascalCase` for React components and classes
+- Use `UPPER_SNAKE_CASE` for constants
+- Use kebab-case for file names (e.g., `home-page.tsx`)
+
+## Code Organization Patterns
+
+- Group frontend code by feature/domain
+- Keep component files small and focused
+- Place shared UI components in a common directory
+- Use consistent directory structure across features
+
+## Frontend Patterns
+
+- Use functional components with hooks
+- Prefer composition over inheritance
+- Extract complex logic to custom hooks
+- Use React Context API for state management
+
+## Backend Patterns
+
+- Follow Laravel convention for controllers and models
+- Use repository pattern for data access
+- Group related API endpoints
+- Validate input on the server side
+
+## Error Handling
+
+- Use try/catch blocks for async operations
+- Implement consistent error responses from API
+- Log errors on the server side
+- Display user-friendly error messages on the frontend
+
+## Performance Practices
+
+- Lazy load components and routes
+- Optimize images for web
+- Implement caching strategies
+- Minimize bundle size
+
+## Development Workflow
+
+- Develop features in isolation
+- Keep commits focused on single changes
+- Document significant architectural decisions
+
+## Coding Style Preferences
+
+- Always prefer simple solutions
+- Avoid console logs in production code
+- Avoid code duplication
+- Keep the codebase clean and organized
+- Do not introduce new patterns without discussion
+- Focus on areas relevant to the current task
+
+## Project Directory Structure
+
+- Frontend: Organized by features with shared components
+- Backend: Standard Laravel structure with additional repositories
+- Database: Migrations with clear naming pattern
+
+## Deployment Considerations
+
+- Optimize assets for production
+- Configure proper caching headers
+- Ensure proper environment variables
+- Follow deployment checklist

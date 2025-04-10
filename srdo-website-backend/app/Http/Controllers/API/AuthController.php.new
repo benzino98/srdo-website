@@ -1,0 +1,207 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+
+class AuthController extends Controller
+{
+    /**
+     * Handle user login
+     */
+    public function login(Request $request)
+    {
+        // Get all request data for debugging
+        Log::info('Login request received', [
+            'request_data' => $request->all(),
+            'headers' => $request->headers->all(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+        
+        // Handle OPTIONS request for CORS preflight
+        if ($request->isMethod('OPTIONS')) {
+            return response()->json(['status' => 'success'], 200)
+                ->header('Access-Control-Allow-Origin', 'http://localhost:3000')
+                ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
+                ->header('Access-Control-Max-Age', '86400');
+        }
+
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
+
+            Log::info('Validation passed', ['email' => $request->email]);
+
+            // Debug credentials (for testing and development)
+            if ($request->email === 'admin@srdo.org') {
+                Log::info('Admin login attempt', ['email' => $request->email]);
+                
+                // Check if the password is 'admin123' or 'password123' (accepting both for now during testing)
+                if ($request->password === 'admin123' || $request->password === 'password123') {
+                    $user = User::where('email', $request->email)->first();
+
+                    if (!$user) {
+                        // If user doesn't exist, create one (for testing only)
+                        Log::info('Creating test admin user');
+
+                        $user = new User([
+                            'name' => 'Admin User',
+                            'email' => 'admin@srdo.org',
+                            'password' => Hash::make('admin123'),
+                            'role' => 'admin',
+                        ]);
+                        $user->save();
+                        Log::info('Created test admin user', ['user_id' => $user->id]);
+                    } else {
+                        Log::info('Found existing admin user', ['user_id' => $user->id]);
+                    }
+
+                    // Delete existing tokens to avoid accumulation
+                    $user->tokens()->delete();
+
+                    // Create new token
+                    $token = $user->createToken('auth-token')->plainTextToken;
+                    
+                    Log::info('Debug login successful for admin', ['user_id' => $user->id, 'token' => substr($token, 0, 10) . '...(truncated)']);
+                    $response = response()->json([
+                        'token' => $token,
+                        'user' => [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'role' => $user->role,
+                        ]
+                    ]);
+
+                    // Add CORS headers directly to the response
+                    $response->header('Access-Control-Allow-Origin', 'http://localhost:3000');
+                    $response->header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+                    $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+                    
+                    Log::info('Returning response', ['response' => $response->getContent()]);
+
+                    return $response;
+                } else {
+                    Log::warning('Invalid admin password', [
+                        'provided_email' => $request->email,
+                        'password_provided' => $request->password !== null
+                    ]);
+                }
+            } else {
+                Log::warning('Debug credentials do not match', [
+                    'provided_email' => $request->email,
+                    'expected_email' => 'admin@srdo.org',
+                    'password_match' => $request->password === 'admin123'
+                ]);
+            }
+
+            // Regular authentication
+            if (!Auth::attempt($validated)) {
+                Log::warning('Login failed: Invalid credentials', ['email' => $request->email]);
+                return response()->json([
+                    'message' => 'The provided credentials are incorrect.',
+                ], 401)
+                ->header('Access-Control-Allow-Origin', 'http://localhost:3000')
+                ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+            }
+
+            $user = User::where('email', $request->email)->first();
+
+            // Delete existing tokens to avoid accumulation
+            $user->tokens()->delete();
+
+            // Create new token
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            Log::info('Login successful', ['user_id' => $user->id, 'email' => $user->email]);
+
+            return response()->json([
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ]
+            ])
+            ->header('Access-Control-Allow-Origin', 'http://localhost:3000')
+            ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+        } catch (ValidationException $e) {
+            Log::warning('Login validation failed', ['errors' => $e->errors()]);
+            return response()->json(['message' => $e->getMessage()], 422)
+            ->header('Access-Control-Allow-Origin', 'http://localhost:3000')
+            ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+        } catch (\Exception $e) {
+            Log::error('Login error', ['message' => $e->getMessage()]);
+            return response()->json(['message' => 'An error occurred during login: ' . $e->getMessage()], 500)
+            ->header('Access-Control-Allow-Origin', 'http://localhost:3000')
+            ->header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+        }
+    }
+
+    /**
+     * Get authenticated user
+     */
+    public function user(Request $request)
+    {
+        return response()->json([
+            'user' => [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+                'role' => $request->user()->role,
+            ]
+        ])
+        ->header('Access-Control-Allow-Origin', 'http://localhost:3000')
+        ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+    }
+
+    /**
+     * Handle user logout
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    /**
+     * Change user password
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The provided password is incorrect.'],
+            ]);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password successfully updated']);
+    }
+} 

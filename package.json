@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@types/axios": "^0.9.36",
+    "@types/react": "^19.1.0",
+    "axios": "^1.8.4",
+    "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0"
+  }
+}
