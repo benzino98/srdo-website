@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 // Define the share/download functionality
 const sharableLocation =
-  "https://goo.gl/maps/SRDO+Headquarters+123+Development+Road+City+Country";
+  "https://goo.gl/maps/srdo-headquarters-plateau-state-nigeria";
 
 const Map: React.FC = () => {
   const [showDirections, setShowDirections] = useState(false);
@@ -18,7 +18,7 @@ const Map: React.FC = () => {
       if (navigator.share) {
         await navigator.share({
           title: "SRDO Headquarters Location",
-          text: "Visit us at SRDO Headquarters, 123 Development Road, City, Country",
+          text: "Visit us at SRDO Headquarters, Jos, Plateau State, Nigeria",
           url: sharableLocation,
         });
         setShareSuccess(true);
@@ -82,7 +82,7 @@ const Map: React.FC = () => {
           title="SRDO Headquarters Location"
           className="w-full h-full"
           style={{ border: 0 }}
-          src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=SRDO+Headquarters,123+Development+Road,City,Country${
+          src={`https://www.google.com/maps/embed/v1/place?key=REACT_APP_GOOGLE_MAPS_API_KEY=SRDO+Headquarters,Jos,Plateau+State,Nigeria${
             showDirections ? "&mode=driving" : ""
           }`}
           allowFullScreen
@@ -124,9 +124,9 @@ const Map: React.FC = () => {
                 SRDO Headquarters
               </h3>
               <p className="text-gray-600 mt-1">
-                123 Development Road
+                Jos, Plateau State
                 <br />
-                City, Country
+                Nigeria
               </p>
             </div>
           </div>
@@ -153,7 +153,7 @@ const Map: React.FC = () => {
               {showDirections ? "Hide Directions" : "Get Directions"}
             </button>
             <a
-              href="tel:+1234567890"
+              href="tel:+234XXXXXXXXXX"
               className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors flex items-center"
             >
               <svg
@@ -176,7 +176,7 @@ const Map: React.FC = () => {
 
           <div className="mt-3 pt-3 border-t border-gray-200">
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=SRDO+Headquarters,123+Development+Road,City,Country`}
+              href={`https://www.google.com/maps/dir/?api=1&destination=SRDO+Headquarters,Jos,Plateau+State,Nigeria`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-green-700 hover:text-green-800 text-sm flex items-center"
@@ -219,7 +219,7 @@ const Map: React.FC = () => {
           <div>
             <h3 className="font-medium text-gray-700">Contact Details</h3>
             <p className="text-gray-600 mt-1">
-              Phone: +1234567890
+              Phone: +234XXXXXXXXXX
               <br />
               Email: info@srdo.org
               <br />
