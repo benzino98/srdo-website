@@ -82,7 +82,9 @@ const Map: React.FC = () => {
           title="SRDO Headquarters Location"
           className="w-full h-full"
           style={{ border: 0 }}
-          src={`https://www.google.com/maps/embed/v1/place?key=REACT_APP_GOOGLE_MAPS_API_KEY=SRDO+Headquarters,Jos,Plateau+State,Nigeria${
+          src={`https://www.google.com/maps/embed/v1/place?key=${
+            process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+          }&q=SRDO+Headquarters,Jos,Plateau+State,Nigeria${
             showDirections ? "&mode=driving" : ""
           }`}
           allowFullScreen
@@ -211,19 +213,15 @@ const Map: React.FC = () => {
             <p className="text-gray-600 mt-1">
               Monday - Friday: 8:00 AM - 5:00 PM
               <br />
-              Saturday: 9:00 AM - 1:00 PM
-              <br />
-              Sunday: Closed
+              Saturday - Sunday: Closed
             </p>
           </div>
           <div>
             <h3 className="font-medium text-gray-700">Contact Details</h3>
             <p className="text-gray-600 mt-1">
-              Phone: +234XXXXXXXXXX
+              Phone: +234-701-944-2172
               <br />
               Email: info@srdo.org
-              <br />
-              Fax: +1234567891
             </p>
           </div>
         </div>
@@ -277,13 +275,12 @@ const Map: React.FC = () => {
                 <p>
                   <span className="font-medium">From the Airport:</span> The
                   SRDO Headquarters is approximately 25 minutes by car from the
-                  International Airport. You can take a taxi or schedule an
-                  airport shuttle.
+                  Heipang Airport. You can take a taxi or schedule an airport
+                  shuttle.
                 </p>
                 <p>
                   <span className="font-medium">By Car:</span> We're located in
-                  the central business district. Parking is available in our
-                  building's underground garage.
+                  Rayfield, Old Government House, Unit 16.
                 </p>
                 <p>
                   <span className="font-medium">GPS Coordinates:</span> 12.3456°
@@ -300,19 +297,14 @@ const Map: React.FC = () => {
               </h3>
               <div className="space-y-3 text-gray-600">
                 <p>
-                  <span className="font-medium">Bus:</span> Routes 15, 27, and
-                  42 stop directly in front of our building. The bus stop name
-                  is "Central Plaza".
-                </p>
-                <p>
-                  <span className="font-medium">Subway/Metro:</span> The nearest
-                  station is "City Center", which is a 5-minute walk from our
-                  office. Take the Blue Line or Green Line.
+                  <span className="font-medium">Metro:</span> The nearest
+                  station is "Bukuru", which is a 10-minute drive from the
+                  airport.
                 </p>
                 <p>
                   <span className="font-medium">Taxi/Ride-sharing:</span> Taxis
                   and ride-sharing services are readily available throughout the
-                  city and can drop you directly at our entrance.
+                  city and can drop you directly at our office.
                 </p>
               </div>
             </div>
@@ -325,20 +317,14 @@ const Map: React.FC = () => {
               </h3>
               <div className="space-y-3 text-gray-600">
                 <p>
-                  <span className="font-medium">Central Plaza:</span> Located
-                  directly across from our building.
+                  <span className="font-medium">
+                    Old Government House Rayfield:
+                  </span>{" "}
+                  Located directly after faveih Junction.
                 </p>
                 <p>
-                  <span className="font-medium">City Library:</span> Next door
-                  to our office on the right.
-                </p>
-                <p>
-                  <span className="font-medium">Grand Hotel:</span> 200 meters
-                  to the north of our building.
-                </p>
-                <p>
-                  <span className="font-medium">Central Park:</span> A large
-                  green space just 5 minutes walking distance.
+                  <span className="font-medium">NTA College:</span> By the right
+                  coming from the Old Government House Junction.
                 </p>
               </div>
             </div>

@@ -355,7 +355,7 @@ const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
     };
 
     loadProjects();
-  }, [status, debouncedSearchTerm, fetchProjects, retryCount, databaseError]);
+  }, [status, debouncedSearchTerm, retryCount, databaseError]);
 
   const handleStatusChange = (newStatus: typeof status) => {
     setStatus(newStatus);
