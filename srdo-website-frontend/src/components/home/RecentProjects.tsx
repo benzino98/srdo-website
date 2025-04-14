@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { useApi } from "../../hooks/useApi";
 
+// Add a flag to track if API calls have failed
+const API_RETRY_LIMIT = 1;
+
 interface Project {
   id: number;
   title: string;
@@ -76,8 +79,18 @@ const RecentProjects: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { get, error: apiError } = useApi<any>();
+  // Add retry count state to limit API calls
+  const [retryCount, setRetryCount] = useState(0);
+  // Add a flag to prevent fetching if backend is down
+  const [backendUnavailable, setBackendUnavailable] = useState(false);
 
   useEffect(() => {
+    // Don't try to fetch if we've determined the backend is down
+    if (backendUnavailable) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchProjects = async () => {
       setIsLoading(true);
       setError(null);
@@ -117,13 +130,22 @@ const RecentProjects: React.FC = () => {
       } catch (err) {
         setError("Failed to load recent projects");
         setProjects([]);
+
+        // Increment retry count and mark backend as unavailable if max retries reached
+        setRetryCount((prevCount) => {
+          const newCount = prevCount + 1;
+          if (newCount >= API_RETRY_LIMIT) {
+            setBackendUnavailable(true);
+          }
+          return newCount;
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProjects();
-  }, [get]);
+  }, [get, retryCount]);
 
   if (isLoading) {
     return (

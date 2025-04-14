@@ -6,6 +6,9 @@ import { Project } from "../../types/project";
 import { PaginatedApiResponse } from "../../types/api";
 import projectService from "../../services/projectService";
 
+// Add a constant to limit retries
+const API_RETRY_LIMIT = 1;
+
 interface ProjectListProps {
   initialStatus?: "ongoing" | "completed" | "all";
 }
@@ -106,6 +109,8 @@ const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  // Add a flag to prevent continuous API calls
+  const [backendUnavailable, setBackendUnavailable] = useState(false);
 
   // Reference to track the latest page requested
   const latestPageRef = useRef(1);
@@ -306,6 +311,12 @@ const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
 
   // Effect for loading projects
   useEffect(() => {
+    // Skip API calls if we know the backend is unavailable
+    if (backendUnavailable) {
+      setManualLoading(false);
+      return;
+    }
+
     const loadProjects = async () => {
       try {
         setManualLoading(true);
@@ -341,13 +352,17 @@ const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
           setDatabaseError(true);
         }
 
-        // Retry logic for transient errors (maximum 3 retries)
-        if (retryCount < 3 && !databaseError) {
+        // Retry logic with a maximum count - modified to prevent infinite retries
+        if (retryCount < API_RETRY_LIMIT && !databaseError) {
           setRetryCount((prev) => prev + 1);
           // Wait a second before retrying
           setTimeout(() => {
             loadProjects();
           }, 1000);
+        } else {
+          // Mark backend as unavailable after max retries
+          setBackendUnavailable(true);
+          console.log("Backend appears to be unavailable. Stopping API calls.");
         }
       } finally {
         setManualLoading(false);
@@ -355,7 +370,14 @@ const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
     };
 
     loadProjects();
-  }, [status, debouncedSearchTerm, retryCount, databaseError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    status,
+    debouncedSearchTerm,
+    retryCount,
+    databaseError,
+    backendUnavailable,
+  ]);
 
   const handleStatusChange = (newStatus: typeof status) => {
     setStatus(newStatus);

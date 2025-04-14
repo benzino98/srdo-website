@@ -7,6 +7,55 @@ export const TOKEN_KEY = "srdo_token";
 // Ensure API_URL correctly includes /v1 to prevent path duplication in requests
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
 
+// Create a cache to track failed endpoints and prevent continuous retries
+const failedEndpointsCache = new Map<
+  string,
+  { timestamp: number; count: number }
+>();
+const MAX_RETRY_ATTEMPTS = 1;
+const RETRY_TIMEOUT_MS = 60000; // 1 minute
+
+// Helper function to check if an endpoint has failed too many times
+const shouldSkipRequest = (url: string, method: string = "get"): boolean => {
+  const endpointKey = `${method}-${url}`;
+  const failedEndpoint = failedEndpointsCache.get(endpointKey);
+
+  if (failedEndpoint) {
+    const currentTime = Date.now();
+    // If we have failed too many times and we're still within the timeout period
+    if (
+      failedEndpoint.count >= MAX_RETRY_ATTEMPTS &&
+      currentTime - failedEndpoint.timestamp < RETRY_TIMEOUT_MS
+    ) {
+      return true;
+    } else if (currentTime - failedEndpoint.timestamp >= RETRY_TIMEOUT_MS) {
+      // If timeout has passed, reset the count
+      failedEndpointsCache.delete(endpointKey);
+    }
+  }
+  return false;
+};
+
+// Helper function to track failed endpoint requests
+const trackFailedEndpoint = (
+  url: string,
+  method: string = "get",
+  status: number = 404
+): void => {
+  // Only track 404 and network errors (0)
+  if (status !== 404 && status !== 0) return;
+
+  const endpointKey = `${method}-${url}`;
+  const failedEndpoint = failedEndpointsCache.get(endpointKey) || {
+    timestamp: Date.now(),
+    count: 0,
+  };
+  failedEndpoint.count += 1;
+  failedEndpoint.timestamp = Date.now();
+
+  failedEndpointsCache.set(endpointKey, failedEndpoint);
+};
+
 // Create axios instance with default config
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -53,7 +102,6 @@ const getCsrfToken = async () => {
       },
     });
   } catch (error) {
-    console.error("Error fetching CSRF token:", error);
     throw error;
   }
 };
@@ -61,6 +109,14 @@ const getCsrfToken = async () => {
 // Request interceptor for adding auth token
 api.interceptors.request.use(
   async (config) => {
+    // Check if this endpoint has failed too many times recently
+    if (config.url && shouldSkipRequest(config.url, config.method)) {
+      // Return a rejected promise to prevent the request
+      return Promise.reject(
+        new Error(`Request to ${config.url} cancelled due to previous failures`)
+      );
+    }
+
     // For mutation operations (POST, PUT, DELETE), get CSRF token first
     if (
       ["post", "put", "delete"].includes(config.method?.toLowerCase() || "")
@@ -83,11 +139,6 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error("Request interceptor error:", {
-      error: error,
-      message: error.message,
-      stack: error.stack,
-    });
     return Promise.reject(error);
   }
 );
@@ -133,10 +184,24 @@ api.interceptors.response.use(
   },
   async (error) => {
     if (!error.response) {
+      // Track network errors
+      if (error.config && error.config.url) {
+        trackFailedEndpoint(error.config.url, error.config.method, 0);
+      }
+
       return Promise.reject({
         message: "Network error. Please check your connection and try again.",
         isNetworkError: true,
       });
+    }
+
+    // Track 404 errors to prevent continuous retries
+    if (error.response.status === 404 && error.config && error.config.url) {
+      trackFailedEndpoint(
+        error.config.url,
+        error.config.method,
+        error.response.status
+      );
     }
 
     // Handle 401 Unauthorized errors

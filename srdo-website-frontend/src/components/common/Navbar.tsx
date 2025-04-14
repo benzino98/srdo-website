@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
             <Link to="/" className="flex items-center">
               <div className="bg-white rounded-full p-1 mr-2">
                 <img
-                  src={`${process.env.PUBLIC_URL}/images/logo/srdo_logo.png`}
+                  src={`${process.env.PUBLIC_URL}/images/logo/srdo_logo.PNG`}
                   alt="SRDO Logo"
                   className="h-10"
                   style={{ maxHeight: "40px" }}

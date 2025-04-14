@@ -122,7 +122,7 @@ const AdminLoginPage: React.FC = () => {
       >
         <div className="flex justify-center">
           <img
-            src={`${process.env.PUBLIC_URL}/images/logo/srdo_logo.png`}
+            src={`${process.env.PUBLIC_URL}/images/logo/srdo_logo.PNG`}
             alt="SRDO Logo"
             className="h-16 w-auto"
           />

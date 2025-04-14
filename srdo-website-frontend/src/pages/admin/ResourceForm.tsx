@@ -225,10 +225,47 @@ const ResourceForm: React.FC = () => {
         return;
       }
 
-      // Check if we're in offline mode
-      const isOffline = !navigator.onLine;
+      // Get the API URL (use this for all API calls in this function)
+      const API_URL =
+        process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+
+      // Check if we're in offline mode using multiple detection methods
+      const navigatorOffline = !navigator.onLine;
+
+      // Only run network test if navigator doesn't already report offline
+      let serverUnreachable = false;
+      if (!navigatorOffline) {
+        try {
+          // Fast network test by fetching a tiny resource with a timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+          // Use a minimal HEAD request to test connectivity to the same resources endpoint
+          // we'll be using for the actual request
+          const apiBase = API_URL.endsWith("/v1") ? API_URL : `${API_URL}/v1`;
+          const resourcesEndpoint = `${apiBase}/resources`;
+
+          await fetch(resourcesEndpoint, {
+            method: "HEAD", // HEAD is very light - just checks if endpoint is available
+            cache: "no-store",
+            signal: controller.signal,
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          clearTimeout(timeoutId);
+        } catch (networkErr) {
+          // Failed to connect, mark server as unreachable
+          console.log("Server connectivity test failed:", networkErr);
+          serverUnreachable = true;
+        }
+      }
+
+      const isOffline = navigatorOffline || serverUnreachable;
 
       if (isOffline) {
+        console.log("Operating in offline mode. Will save resource locally.");
         // Handle offline resource creation/update
         const currentResources = JSON.parse(
           localStorage.getItem("offline_resources") || "[]"
@@ -305,10 +342,6 @@ const ResourceForm: React.FC = () => {
 
       // Use cancelToken to allow aborting the request
       const source = axios.CancelToken.source();
-
-      // Get the API URL
-      const API_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
       // Build the correct endpoint URL
       const apiEndpoint = API_URL.endsWith("/v1")

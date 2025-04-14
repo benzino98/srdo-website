@@ -49,7 +49,6 @@ const processAPIComments = (apiComments: Comment[], savedStats: any[]) => {
     const commentStats = savedStats.find((stat) => stat.id === comment.id);
 
     if (commentStats) {
-      console.log(`Found saved stats for comment ${comment.id}:`, commentStats);
       return {
         ...comment,
         likes: commentStats.likes || 0,
@@ -83,7 +82,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         return [];
       }
     } catch (error) {
-      console.error("Error loading initial comment stats:", error);
       return [];
     }
   };
@@ -158,12 +156,7 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       setLoading(true);
       setError(null);
 
-      console.log("FORCE REFRESHING comments with direct API call");
-      console.log(`Content type: ${type}, Item ID: ${itemId}`);
-      console.log(`ItemId type: ${typeof itemId}, value: ${itemId}`);
-
       if (!itemId || isNaN(Number(itemId))) {
-        console.error("Invalid itemId:", itemId);
         setComments([]);
         setTotalComments(0);
         setError("Invalid content ID");
@@ -220,12 +213,10 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
           if (response.data) {
             commentsData = response.data.data || response.data;
           } else {
-            console.error("Response data is undefined");
           }
 
           // Ensure we have an array of comments
           if (!Array.isArray(commentsData)) {
-            console.error("Comments data is not an array:", commentsData);
             commentsData = [];
           }
 
@@ -250,7 +241,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         throw axiosError;
       }
     } catch (err: any) {
-      console.error("Error in force refresh:", err);
       setComments([]);
       setTotalComments(0);
 
@@ -305,11 +295,9 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
               } else if (Array.isArray(apiResponse.data)) {
                 newComments = apiResponse.data as Comment[];
               } else {
-                console.error("Unexpected response structure:", result);
                 newComments = [];
               }
             } else {
-              console.error("API response or data is undefined:", apiResponse);
               newComments = [];
             }
           }
@@ -347,7 +335,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         // forceRefresh();
       }
     } catch (err: any) {
-      console.error("Error loading comments:", err);
       setComments([]);
 
       if (err.response?.status === 401) {
@@ -384,7 +371,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       // Cleanup interval on unmount
       return () => clearInterval(newlyApprovedCommentsCheck);
     } else {
-      console.error("Invalid itemId on component mount:", itemId);
       setError("Invalid content ID. Cannot load comments.");
     }
   }, [loadComments, type, itemId]);
@@ -429,7 +415,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
     }
 
     if (!itemId || isNaN(Number(itemId))) {
-      console.error("Invalid itemId in handleSubmit:", itemId);
       setError("Invalid content ID. Cannot post comment.");
       return;
     }
@@ -488,11 +473,9 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
           throw new Error(`Server responded with status: ${response.status}`);
         }
       } catch (axiosError: any) {
-        console.error("Error with direct API call:", axiosError);
         throw axiosError;
       }
     } catch (err: any) {
-      console.error("Error posting comment:", err);
       let message = "Failed to post comment";
 
       if (err.response?.data) {
@@ -569,7 +552,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       // Save updated comments with new reply to localStorage
       saveCommentsStatsToLocalStorage(updatedComments);
     } catch (err) {
-      console.error("Error posting reply:", err);
     } finally {
       setLoading(false);
     }
@@ -634,9 +616,7 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         `likes_${type}_${itemId}`,
         JSON.stringify(updatedLikedComments)
       );
-    } catch (error) {
-      console.error("Error saving liked comments to localStorage:", error);
-    }
+    } catch (error) {}
   };
 
   // Helper function to save comment stats to localStorage
@@ -651,7 +631,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         .map((comment) => {
           // Make sure we have valid data
           if (!comment || typeof comment !== "object" || !comment.id) {
-            console.error("Invalid comment object:", comment);
             return null;
           }
 
@@ -665,7 +644,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
         .filter(Boolean); // Remove any null entries
 
       if (commentsStats.length === 0) {
-        console.error("No valid comment stats to save");
         return;
       }
 
@@ -690,13 +668,9 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       if (mainSavedData) {
         try {
           const parsed = JSON.parse(mainSavedData);
-        } catch (e) {
-          console.error("Could not parse saved data:", e);
-        }
+        } catch (e) {}
       }
-    } catch (error) {
-      console.error("Error saving comment stats to localStorage:", error);
-    }
+    } catch (error) {}
   };
 
   // Toggle showing replies for a comment
@@ -750,11 +724,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
       try {
         savedStats = JSON.parse(savedStatsString);
       } catch (parseError) {
-        console.error(
-          `Error parsing localStorage data for ${storageKey}:`,
-          parseError
-        );
-
         return null;
       }
 
@@ -765,10 +734,6 @@ const Comments: React.FC<CommentsProps> = ({ type, itemId }) => {
 
       return commentStats || null;
     } catch (error) {
-      console.error(
-        `Error retrieving saved comment stats for comment ${commentId}:`,
-        error
-      );
       return null;
     }
   };
