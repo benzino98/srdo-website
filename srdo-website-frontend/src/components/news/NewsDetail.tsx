@@ -104,6 +104,9 @@ const getImageUrl = (
     return imageUrl;
   }
 
+  // Get the domain from the current window location
+  const domain = window.location.origin;
+
   // Get backend base URL without any /api segments
   const apiUrl =
     process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
@@ -115,8 +118,12 @@ const getImageUrl = (
     .replace(/^storage\//, "") // Remove storage/ prefix if present
     .replace(/^news\//, ""); // Remove news/ prefix if present
 
-  // Construct the final URL with the storage path
-  const fullUrl = `${baseUrl}/storage/news/${cleanPath}`;
+  // For shared hosting, try using the full website domain first
+  // This is often how shared hosting setups work
+  const fullUrl = `${domain}/storage/news/${cleanPath}`;
+
+  // Log the constructed URL for debugging
+  console.log("Image URL constructed in NewsDetail:", fullUrl);
 
   return fullUrl;
 };

@@ -39,10 +39,8 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // Get base URL from environment or default
-  const apiUrl =
-    process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-  const baseUrl = apiUrl.split("/api")[0];
+  // Get the domain from the current window location
+  const domain = window.location.origin;
 
   // Clean up the image URL
   const cleanImageUrl = imageUrl.replace(/([^:])\/+/g, "$1/");
@@ -58,11 +56,19 @@ const getImageUrl = (
     cleanImageUrl.includes("/storage/projects/")
   ) {
     const normalizedPath = cleanImageUrl.replace(/^\/+/, "");
-    return `${baseUrl}/${normalizedPath}`;
+    const fullUrl = `${domain}/${normalizedPath}`;
+
+    // Log the constructed URL for debugging
+
+    return fullUrl;
   }
 
   // Default case: assume it's a storage URL
-  return `${baseUrl}/storage/${cleanImageUrl}`;
+  const fullUrl = `${domain}/storage/${cleanImageUrl}`;
+
+  // Log the constructed URL for debugging
+
+  return fullUrl;
 };
 
 // Format currency helper

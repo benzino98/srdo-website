@@ -50,28 +50,28 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // For storage URLs, ensure we're using the correct base URL
-  const baseUrl =
-    process.env.REACT_APP_API_URL?.replace("/api/v1", "") ||
-    "http://localhost:8000";
+  // Get the domain from the current window location
+  const domain = window.location.origin;
 
   // If the URL starts with /storage, it's an uploaded file
   if (imageUrl.startsWith("/storage/")) {
-    return `${baseUrl}${imageUrl}`;
+    return `${domain}${imageUrl}`;
   }
 
   // If it starts with storage/ without leading slash
   if (imageUrl.startsWith("storage/")) {
-    return `${baseUrl}/${imageUrl}`;
+    return `${domain}/${imageUrl}`;
   }
 
   // If it's a relative URL starting with /
   if (imageUrl.startsWith("/")) {
-    return `${baseUrl}${imageUrl}`;
+    return `${domain}${imageUrl}`;
   }
 
   // If it's just a filename, assume it's in the storage folder
-  return `${baseUrl}/storage/${imageUrl}`;
+  const fullUrl = `${domain}/storage/${imageUrl}`;
+
+  return fullUrl;
 };
 
 const RecentProjects: React.FC = () => {

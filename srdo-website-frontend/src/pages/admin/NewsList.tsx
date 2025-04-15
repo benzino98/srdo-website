@@ -22,10 +22,8 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // Get backend base URL without any /api segments
-  const apiUrl =
-    process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-  const baseUrl = apiUrl.replace(/\/api.*$/, "").replace(/\/+$/, "");
+  // Get the domain from the current window location
+  const domain = window.location.origin;
 
   // Clean up the image path
   const cleanPath = imageUrl
@@ -34,7 +32,9 @@ const getImageUrl = (
     .replace(/^news\//, ""); // Remove news/ prefix if present
 
   // Construct the final URL with the storage path
-  return `${baseUrl}/storage/news/${cleanPath}`;
+  const fullUrl = `${domain}/storage/news/${cleanPath}`;
+
+  return fullUrl;
 };
 
 const NewsList: React.FC = () => {

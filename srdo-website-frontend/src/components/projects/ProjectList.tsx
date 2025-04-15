@@ -61,19 +61,16 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // Get the base URL without /api/v1
-  const apiUrl =
-    process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-  // Remove both /api/v1 and /api to ensure clean base URL
-  const baseUrl = apiUrl.split("/api")[0];
+  // Get the domain from the current window location
+  const domain = window.location.origin;
+
+  // If it's a local images path
+  if (imageUrl.startsWith("/images")) {
+    return imageUrl;
+  }
 
   // Clean up the image URL
   const cleanImageUrl = imageUrl.replace(/([^:])\/+/g, "$1/");
-
-  // If it's a local images path
-  if (cleanImageUrl.startsWith("/images")) {
-    return cleanImageUrl;
-  }
 
   // Handle storage URLs - ensure we're using the correct path structure
   if (
@@ -82,19 +79,22 @@ const getImageUrl = (
   ) {
     // Remove any leading slash and ensure proper path structure
     const normalizedPath = cleanImageUrl.replace(/^\/+/, "");
-    const fullUrl = `${baseUrl}/${normalizedPath}`;
+    const fullUrl = `${domain}/${normalizedPath}`;
+
     return fullUrl;
   }
 
   // If it's just a filename
   if (!cleanImageUrl.includes("/")) {
-    const fullUrl = `${baseUrl}/storage/projects/${cleanImageUrl}`;
+    const fullUrl = `${domain}/storage/projects/${cleanImageUrl}`;
+
     return fullUrl;
   }
 
   // Final fallback
   const normalizedPath = cleanImageUrl.replace(/^\/+/, "");
-  const fullUrl = `${baseUrl}/storage/projects/${normalizedPath}`;
+  const fullUrl = `${domain}/storage/projects/${normalizedPath}`;
+
   return fullUrl;
 };
 
