@@ -50,7 +50,6 @@ const getImageUrl = (
   category?: string
 ): string => {
   if (!imageUrl) {
-    // Use local fallback image
     return "/images/news/placeholder.jpg";
   }
 
@@ -64,28 +63,27 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // Get the domain from the current window location
-  const domain = window.location.origin;
-
-  // Get backend base URL without any /api segments
-  const apiUrl =
+  // Get the API base URL
+  const apiBaseUrl =
     process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
-  const baseUrl = apiUrl.replace(/\/api.*$/, "").replace(/\/+$/, "");
+  // Extract the domain without the /api/v1 part
+  const baseUrl = apiBaseUrl.split("/api")[0];
 
-  // Clean up the image path
-  const cleanPath = imageUrl
-    .replace(/^\/+/, "") // Remove leading slashes
-    .replace(/^storage\//, "") // Remove storage/ prefix if present
-    .replace(/^news\//, ""); // Remove news/ prefix if present
+  // Check if the path is a storage path
+  if (imageUrl.includes("/storage/") || imageUrl.includes("storage/")) {
+    // Remove any leading slashes and ensure storage/ is at the beginning
+    const cleanPath = imageUrl
+      .replace(/^\/+/, "") // Remove leading slashes
+      .replace(/^storage\//, "") // Remove 'storage/' prefix if present
+      .replace(/^\/?news\//, ""); // Remove 'news/' prefix if present
 
-  // For shared hosting, try using the full website domain first
-  // This is often how shared hosting setups work
-  const fullUrl = `${domain}/storage/news/${cleanPath}`;
+    // For news items, specifically use the news image directory
+    return `${baseUrl}/images/news/${cleanPath}`;
+  }
 
-  // Log the constructed URL for debugging
-  console.log("Image URL constructed:", fullUrl);
-
-  return fullUrl;
+  // Fallback to placeholder if path doesn't match expected format
+  console.warn("Image path format not recognized:", imageUrl);
+  return "/images/news/placeholder.jpg";
 };
 
 const NewsList: React.FC<NewsListProps> = ({ category = "All" }) => {

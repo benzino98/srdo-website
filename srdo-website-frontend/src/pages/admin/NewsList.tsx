@@ -22,19 +22,41 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // Get the domain from the current window location
-  const domain = window.location.origin;
+  // If the URL already starts with /storage, use it directly with the APP_URL
+  if (imageUrl.startsWith("/storage/")) {
+    // Get API URL from env or default
+    const apiUrl =
+      process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
+    // Extract just the domain and base path without api/v1
+    const baseUrl = apiUrl.split("/api")[0];
 
-  // Clean up the image path
+    // Extract the news filename from the path
+    const pathParts = imageUrl.split("/");
+    const filename = pathParts[pathParts.length - 1];
+
+    // Direct access to the images folder
+    return `${baseUrl}/images/news/${filename}`;
+  }
+
+  // Remove any leading slashes and clean the path
   const cleanPath = imageUrl
     .replace(/^\/+/, "") // Remove leading slashes
-    .replace(/^storage\//, "") // Remove storage/ prefix if present
-    .replace(/^news\//, ""); // Remove news/ prefix if present
+    .replace(/^storage\//, ""); // Remove storage/ prefix if present
 
-  // Construct the final URL with the storage path
-  const fullUrl = `${domain}/storage/news/${cleanPath}`;
+  // Get API URL from env or default
+  const apiUrl =
+    process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
+  // Extract just the domain and base path without api/v1
+  const baseUrl = apiUrl.split("/api")[0];
 
-  return fullUrl;
+  // Check if this is a news path
+  if (cleanPath.startsWith("news/")) {
+    const filename = cleanPath.split("/").pop() || "";
+    return `${baseUrl}/images/news/${filename}`;
+  }
+
+  // Construct the final image URL - using the Laravel path for content
+  return `${baseUrl}/images/${cleanPath}`;
 };
 
 const NewsList: React.FC = () => {
@@ -424,12 +446,21 @@ const NewsList: React.FC = () => {
                           src={getImageUrl(article.image_url, article.title)}
                           alt={article.title}
                           onError={(e) => {
-                            console.log(
-                              "Image failed to load:",
+                            // Log detailed error information
+                            const imgUrl = e.currentTarget.src;
+                            console.error(
+                              "Admin news image failed to load:",
+                              imgUrl,
+                              "Original path:",
                               article.image_url
                             );
+
+                            // Immediately use placeholder without any retry logic
                             e.currentTarget.src =
                               "/images/news/placeholder.jpg";
+
+                            // Clear the error handler to prevent further retries
+                            e.currentTarget.onerror = null;
                           }}
                         />
                       )}

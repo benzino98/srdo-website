@@ -197,4 +197,9 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/email/verify/{id}/{hash}', [RegisterController::class, 'verify'])
         ->middleware(['signed'])
         ->name('verification.verify');
-}); 
+});
+
+// Add image routes
+Route::get('/images/news/{filename}', 'App\Http\Controllers\API\ImageController@getNewsImage');
+Route::get('/images/projects/{filename}', 'App\Http\Controllers\API\ImageController@getProjectImage');
+Route::get('/images/resources/{filename}', 'App\Http\Controllers\API\ImageController@getResourceFile'); 

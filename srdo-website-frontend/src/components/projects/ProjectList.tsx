@@ -61,41 +61,32 @@ const getImageUrl = (
     return imageUrl;
   }
 
-  // Get the domain from the current window location
-  const domain = window.location.origin;
-
   // If it's a local images path
   if (imageUrl.startsWith("/images")) {
     return imageUrl;
   }
 
-  // Clean up the image URL
-  const cleanImageUrl = imageUrl.replace(/([^:])\/+/g, "$1/");
+  // Get the API base URL
+  const apiBaseUrl =
+    process.env.REACT_APP_API_URL || "http://localhost:8000/api/v1";
+  // Extract the domain without the /api/v1 part
+  const baseUrl = apiBaseUrl.split("/api")[0];
 
-  // Handle storage URLs - ensure we're using the correct path structure
-  if (
-    cleanImageUrl.includes("storage/projects/") ||
-    cleanImageUrl.includes("/storage/projects/")
-  ) {
-    // Remove any leading slash and ensure proper path structure
-    const normalizedPath = cleanImageUrl.replace(/^\/+/, "");
-    const fullUrl = `${domain}/${normalizedPath}`;
+  // Check if the path is a storage path
+  if (imageUrl.includes("/storage/") || imageUrl.includes("storage/")) {
+    // Remove any leading slashes and ensure storage/ is at the beginning
+    const cleanPath = imageUrl
+      .replace(/^\/+/, "") // Remove leading slashes
+      .replace(/^storage\//, "") // Remove 'storage/' prefix if present
+      .replace(/^\/?projects\//, ""); // Remove 'projects/' prefix if present
 
-    return fullUrl;
+    // For project items, specifically use the projects image directory
+    return `${baseUrl}/images/projects/${cleanPath}`;
   }
 
-  // If it's just a filename
-  if (!cleanImageUrl.includes("/")) {
-    const fullUrl = `${domain}/storage/projects/${cleanImageUrl}`;
-
-    return fullUrl;
-  }
-
-  // Final fallback
-  const normalizedPath = cleanImageUrl.replace(/^\/+/, "");
-  const fullUrl = `${domain}/storage/projects/${normalizedPath}`;
-
-  return fullUrl;
+  // Fallback to placeholder if path doesn't match expected format
+  console.warn("Image path format not recognized:", imageUrl);
+  return "/images/projects/farming.jpg";
 };
 
 const ProjectList: React.FC<ProjectListProps> = ({ initialStatus = "all" }) => {
